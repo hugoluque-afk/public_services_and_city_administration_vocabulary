@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en" translate="no">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google" content="notranslate">
+    <title>Mayor for a Day: City Vocab!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            overflow: hidden;
+            background-color: #0f172a;
+        }
+
+        @keyframes fadeInUp {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in-up {
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(-25%); animation-timing-function: cubic-bezier(0.8,0,1,1); }
+            50% { transform: none; animation-timing-function: cubic-bezier(0,0,0.2,1); }
+        }
+
+        .animate-bounce-custom {
+            animation: bounce 1s infinite;
+        }
+
+        @keyframes pulse-heart {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.15); }
+        }
+
+        .heart-active {
+            color: #ef4444;
+            fill: #ef4444;
+            animation: pulse-heart 1.5s infinite;
+        }
+
+        .heart-inactive {
+            color: #d1d5db;
+            fill: none;
+        }
+
+        .no-select {
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+<body class="no-select text-slate-800">
+
+    <!-- OFFLINE BADGE INDICATOR -->
+    <div id="offline-badge" class="hidden absolute top-4 left-4 z-50 bg-red-600/90 text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg backdrop-blur-sm border border-red-400 flex items-center space-x-2 animate-pulse">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>
+        <span id="offline-text">Offline Mode (Local Only)</span>
+    </div>
+
+    <!-- DECORATIVE BACKGROUNDS -->
+    <div id="bg-decorations" class="hidden">
+        <div class="fixed top-[-10%] left-[-10%] w-96 h-96 bg-indigo-300/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
+        <div class="fixed bottom-[-10%] right-[-10%] w-[40rem] h-[40rem] bg-pink-300/20 rounded-full blur-3xl pointer-events-none -z-10"></div>
+    </div>
+
+    <!-- WELCOME SCREEN -->
+    <div id="welcome-screen" class="min-h-screen w-full bg-gradient-to-br from-indigo-900 via-purple-800 to-indigo-900 flex flex-col items-center justify-center p-6 text-white absolute inset-0 z-10 transition-opacity duration-300 overflow-y-auto">
+        
+        <div class="flex flex-col lg:flex-row items-center lg:items-stretch justify-center gap-8 w-full max-w-6xl z-10 my-auto mt-12 md:mt-auto">
+            
+            <!-- LEFT PANEL: Main Game Start -->
+            <div class="max-w-2xl w-full text-center space-y-8 p-8 md:p-10 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/20 animate-fade-in-up flex flex-col justify-center">
+                <div class="inline-block p-4 bg-gradient-to-tr from-pink-500 to-orange-400 rounded-full shadow-lg mx-auto w-max">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-white"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+                </div>
+                <h1 class="text-5xl md:text-7xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 drop-shadow-sm">
+                    Mayor for a Day
+                </h1>
+                <h2 class="text-2xl md:text-3xl font-semibold text-indigo-200">
+                    City Vocabulary Challenge!
+                </h2>
+                <p class="text-lg text-gray-300 max-w-md mx-auto hidden md:block">
+                    Master City Administration and Public Services Vocabulary. Over 200+ unique exercises!
+                </p>
+
+                <div class="max-w-sm mx-auto w-full mt-4 mb-4 relative">
+                    <input type="text" id="player-name" placeholder="Enter your name to start..." class="w-full px-6 py-4 rounded-full text-slate-800 font-bold text-xl text-center focus:outline-none focus:ring-4 focus:ring-pink-500 shadow-inner" maxlength="20">
+                    <p id="name-error" class="hidden text-red-300 font-semibold mt-2 drop-shadow-md">Please enter your name!</p>
+                </div>
+
+                <div class="flex flex-col items-center space-y-4">
+                    <button onclick="startGame()" class="group relative px-8 py-4 bg-gradient-to-r from-pink-500 to-purple-600 rounded-full font-bold text-xl md:text-2xl shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-300 active:scale-95 flex items-center justify-center mx-auto space-x-3 overflow-hidden">
+                        <span class="absolute inset-0 w-full h-full bg-white/20 group-hover:animate-pulse"></span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                        <span>Start Learning</span>
+                    </button>
+                    <p class="text-white/50 text-sm font-medium tracking-wide">
+                        Developed by: Hugo Luque
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT PANEL: Mini Leaderboard -->
+            <div class="w-full lg:w-80 bg-black/20 backdrop-blur-lg rounded-3xl shadow-2xl border border-white/10 animate-fade-in-up p-6 flex flex-col relative overflow-hidden" style="animation-delay: 0.1s;">
+                <div class="absolute top-0 right-0 p-16 bg-amber-500/10 blur-3xl rounded-full pointer-events-none"></div>
+                
+                <h3 class="text-amber-400 font-black text-2xl mb-6 flex items-center justify-center space-x-2 border-b border-white/10 pb-4 relative z-10">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
+                    <span>Top 5 Citizens</span>
+                </h3>
+                
+                <div id="mini-leaderboard-list" class="space-y-3 text-sm flex-1 relative z-10">
+                    <p class="text-gray-400 text-center mt-8">Connecting to Sheets...</p>
+                </div>
+                
+                <button onclick="showLeaderboard('welcome-screen')" class="mt-6 w-full py-4 bg-indigo-600/30 hover:bg-indigo-600/50 rounded-2xl text-indigo-200 hover:text-white text-sm md:text-base font-bold transition-all border border-indigo-400/30 relative z-10 shadow-lg">
+                    View Full Global Leaderboard
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- COUNTDOWN SCREEN -->
+    <div id="countdown-screen" class="hidden min-h-screen w-full bg-slate-900 flex items-center justify-center text-white absolute inset-0 z-20">
+        <div class="text-center">
+            <h1 id="countdown-text" class="text-9xl md:text-[12rem] font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-blue-500 animate-bounce-custom drop-shadow-[0_0_30px_rgba(74,222,128,0.5)]">
+                3
+            </h1>
+        </div>
+    </div>
+
+    <!-- PLAYING SCREEN -->
+    <div id="playing-screen" class="hidden min-h-screen w-full bg-slate-50 flex flex-col absolute inset-0 z-10 overflow-y-auto">
+        
+        <!-- Header -->
+        <header class="w-full bg-white shadow-sm p-4 flex justify-between items-center z-10 sticky top-0">
+            <div class="flex items-center space-x-2">
+                <div id="level-display" class="bg-indigo-100 text-indigo-800 px-4 py-2 rounded-full font-black text-lg shadow-inner">
+                    Level 1
+                </div>
+            </div>
+
+            <button onclick="stopGame()" class="text-gray-400 hover:text-red-500 transition-colors p-2" title="Stop Game">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
+            </button>
+
+            <div class="flex items-center space-x-6">
+                <div id="hearts-container" class="flex items-center space-x-1">
+                    <!-- Hearts generated by JS -->
+                </div>
+                <div class="text-2xl font-black text-slate-700">
+                    <span id="score-display">0</span> <span class="text-sm font-medium text-slate-500">PTS</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Timer Bar -->
+        <div class="w-full bg-slate-200 h-2 z-10 relative">
+            <div id="timer-bar" class="bg-gradient-to-r from-green-400 to-emerald-500 h-2 transition-all duration-100 ease-linear" style="width: 100%"></div>
+        </div>
+        <div class="w-full text-center absolute top-20 z-10 pointer-events-none">
+            <span id="timer-text" class="text-xl font-black text-slate-400 drop-shadow-sm hidden">15s</span>
+        </div>
+
+        <!-- Main Game Area -->
+        <main class="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-4xl mx-auto relative z-0">
+            
+            <!-- Feedback Overlay -->
+            <div id="feedback-overlay" class="hidden absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-3xl transition-opacity duration-200">
+                <h2 id="feedback-text" class="text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center">
+                    Wow!
+                </h2>
+            </div>
+
+            <!-- Question Card -->
+            <div id="question-card" class="w-full bg-white rounded-3xl shadow-[0_20px_50px_rgba(8,_112,_184,_0.07)] border border-slate-100 p-6 md:p-10 flex flex-col relative overflow-hidden hidden">
+                
+                <div class="flex items-start justify-between mb-8 md:mb-12">
+                    <h2 id="question-text" class="text-3xl md:text-5xl font-bold leading-tight text-slate-800 flex-1">
+                        <!-- Question injected by JS -->
+                    </h2>
+                    <button onclick="playCurrentAudio()" class="ml-4 p-4 bg-indigo-50 text-indigo-600 rounded-full hover:bg-indigo-100 hover:scale-110 transition-all shadow-sm active:scale-95 flex-shrink-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+                    </button>
+                </div>
+
+                <!-- Options -->
+                <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 w-full">
+                    <!-- Buttons injected by JS -->
+                </div>
+
+                <!-- Hint Section -->
+                <div class="mt-8 flex flex-col items-center border-t border-slate-100 pt-6 min-h-[80px]">
+                    <button id="show-hint-btn" onclick="showHint()" class="flex items-center space-x-2 text-amber-500 hover:text-amber-600 font-medium px-4 py-2 rounded-full hover:bg-amber-50 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"></path><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line></svg>
+                        <span>Show Hint</span>
+                    </button>
+                    
+                    <div id="hint-content" class="hidden bg-amber-50 text-amber-800 p-4 rounded-xl flex items-start space-x-3 w-full max-w-2xl animate-fade-in-up">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="flex-shrink-0 mt-1 text-amber-500"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1.3.5 2.6 1.5 3.5.8.8 1.3 1.5 1.5 2.5"></path><line x1="9" y1="18" x2="15" y2="18"></line><line x1="10" y1="22" x2="14" y2="22"></line></svg>
+                        <p id="hint-text" class="text-lg"></p>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- GAMEOVER SCREEN -->
+    <div id="gameover-screen" class="hidden min-h-screen w-full bg-gradient-to-br from-red-900 via-gray-900 to-black flex items-center justify-center p-6 text-white absolute inset-0 z-30">
+        <div class="max-w-md w-full text-center space-y-6 p-8 bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-red-500/30 animate-fade-in-up">
+            <h1 class="text-5xl font-black text-red-500 drop-shadow-md">Game Over</h1>
+            <p class="text-2xl text-gray-300">Level Reached: <span id="final-level" class="font-bold text-white">1</span></p>
+            <p class="text-2xl text-gray-300">Final Score: <span id="final-score" class="font-bold text-white">0</span></p>
+            <p class="text-xl text-gray-400">Total Time Alive: <span id="final-time" class="font-bold text-white">0</span>s</p>
+            
+            <button onclick="showLeaderboard('gameover-screen')" class="w-full py-4 bg-gradient-to-r from-amber-500 to-orange-600 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 transition-transform active:scale-95 flex items-center justify-center space-x-2 mt-4">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 20h20"></path><path d="M5 20V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v14"></path><path d="M9 20V12h6v8"></path></svg>
+                <span>View Leaderboard</span>
+            </button>
+
+            <button onclick="startGame()" class="mt-4 w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl font-bold text-xl shadow-lg hover:scale-105 transition-transform active:scale-95 flex items-center justify-center space-x-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path></svg>
+                <span>Play Again</span>
+            </button>
+            <button onclick="stopGame()" class="w-full py-4 bg-gray-700/50 hover:bg-gray-700 rounded-2xl font-bold text-xl shadow-lg transition-colors flex items-center justify-center space-x-2">
+                <span>Main Menu</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- LEADERBOARD SCREEN -->
+    <div id="leaderboard-screen" class="hidden min-h-screen w-full bg-slate-900 flex flex-col items-center justify-center p-6 text-white absolute inset-0 z-40 overflow-y-auto">
+        <div class="max-w-2xl w-full space-y-6 p-8 bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 animate-fade-in-up mt-10 mb-10">
+            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-500 drop-shadow-md text-center">Live Top 10 Leaderboard</h1>
+            
+            <div class="bg-black/30 rounded-2xl overflow-hidden mt-6">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white/10 text-gray-300 text-sm md:text-base uppercase tracking-wider">
+                            <th class="p-4 border-b border-white/10">Rank</th>
+                            <th class="p-4 border-b border-white/10">Name</th>
+                            <th class="p-4 border-b border-white/10 text-center">Score</th>
+                            <th class="p-4 border-b border-white/10 text-right">Time (s)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-list" class="text-base md:text-lg">
+                        <!-- Filled by JS -->
+                        <tr><td colspan="4" class="text-center p-4 text-gray-400">Loading live records...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="flex justify-center mt-8">
+                <button id="lb-back-btn" onclick="switchScreen('welcome-screen')" class="w-full md:w-1/2 py-4 bg-gray-600 hover:bg-gray-500 rounded-2xl font-bold text-xl shadow-lg transition-colors flex items-center justify-center space-x-2">
+                    <span>Back</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // 🚀 IMPORTANTE: PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
+        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwZWMunQR1khy3-Nb0bNuSOezu-5R1rGVg0-Mj47vRX8SNLpVy730O0IPELTmysFNv4/exec"; 
+
+        // --- GLOBAL VARIABLES ---
+        let playerName = "";
+        let score = 0;
+        let lives = 5;
+        let level = 1;
+        let currentQ = null;
+        let isProcessing = false;
+
+        let questionTimeLimit = 15;
+        let currentTimer = 15;
+        let timerInterval = null;
+        let totalTimeAlive = 0;
+        let questionStartTime = 0;
+
+        let leaderboardData = []; 
+        let leaderboardPollingInterval = null;
+        let userIP = "unknown"; 
+
+        // Obtener IP del usuario al cargar la página
+        async function fetchUserIP() {
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const data = await res.json();
+                userIP = data.ip;
+            } catch (e) {
+                console.warn("No se pudo obtener la IP", e);
+            }
+        }
+        fetchUserIP();
+
+        // Check Setup
+        if (GOOGLE_SHEETS_URL.trim() === "") {
+            document.getElementById('offline-badge').classList.remove('hidden');
+            document.getElementById('offline-text').innerText = "URL de Google Sheets no configurada. Récords locales.";
+        }
+
+        // Load voices early
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.getVoices();
+        }
+
+        // --- NEW VOCABULARY DATA (200+ Variations from PDF) ---
+        const VOCAB_WORDS = [
+            "Mayor", "Citizen", "Resident", "City Councilor", "Civil Servant", "Constituent", "City Manager", 
+            "Town Hall", "Public Library", "Courthouse", "Community Center", "Public Works", "Registry Office", 
+            "Sanitation", "Public Transportation", "Utilities", "Public Safety", "Urban Planning", "Parks and Recreation", 
+            "Municipality", "Ordinance", "Civic Duty", "Infrastructure", "Taxation", "Budget", "Bylaw"
+        ];
+
+        const HINTS = {
+            "Mayor": "The elected head of a city or town.",
+            "Citizen": "A legally recognized subject with rights and responsibilities.",
+            "Resident": "Someone who lives permanently in a certain place.",
+            "City Councilor": "An elected member making local laws (also Alderman).",
+            "Civil Servant": "A public sector employee working for the government.",
+            "Constituent": "A voting member represented by an elected official.",
+            "City Manager": "An appointed official directing daily city administration.",
+            "Town Hall": "Headquarters of city administration.",
+            "Public Library": "A building to borrow books and access computers.",
+            "Courthouse": "Where courts of law are held.",
+            "Community Center": "A public location for group activities and support.",
+            "Public Works": "Maintains city infrastructure like roads and bridges.",
+            "Registry Office": "Where official records like births and marriages are kept.",
+            "Sanitation": "Responsible for garbage collection and street cleaning.",
+            "Public Transportation": "Government-funded transit systems like buses.",
+            "Utilities": "Essential services like water, electricity, and gas.",
+            "Public Safety": "Police, Fire Department, and EMS.",
+            "Urban Planning": "Decides how land is used for organized growth.",
+            "Parks and Recreation": "Maintains public playgrounds and recreational programs.",
+            "Municipality": "A city or town that has corporate status and local government.",
+            "Ordinance": "A local law enacted by a city council.",
+            "Civic Duty": "Responsibilities of a citizen, like voting.",
+            "Infrastructure": "Basic physical systems of a city (roads, bridges).",
+            "Taxation": "Money collected to fund public services.",
+            "Budget": "The city's financial plan for spending.",
+            "Bylaw": "A rule established by a community to regulate itself."
+        };
+
+        const QUESTION_BANK = [
+            // Mayor
+            { q: "The elected head of a city, town, or other municipality is the ___.", a: "Mayor" },
+            { q: "Who is the top elected executive in local government?", a: "Mayor" },
+            { q: "The ___'s office is usually located inside the Town Hall.", a: "Mayor" },
+            { q: "If you run for the highest elected office in a town, you want to be the ___.", a: "Mayor" },
+            { q: "Who represents the city and leads the local government?", a: "Mayor" },
+            { q: "The ___ gave a speech at the opening of the new community center.", a: "Mayor" },
+            { q: "Which official is ELECTED by the public to lead the city's administration?", a: "Mayor" },
+            { q: "The voters chose a new ___ to run their municipality.", a: "Mayor" },
+            // Citizen
+            { q: "A legally recognized subject with rights and responsibilities is a ___.", a: "Citizen" },
+            { q: "Voting and paying taxes are responsibilities of a good ___.", a: "Citizen" },
+            { q: "A native or naturalized national of a state is called a ___.", a: "Citizen" },
+            { q: "A ___ has the civic duty to serve on a jury if called upon.", a: "Citizen" },
+            { q: "The new noise ordinance was debated by a group of concerned ___s.", a: "Citizen" },
+            { q: "Who is a legally recognized member of a state or commonwealth?", a: "Citizen" },
+            { q: "As a ___, you have the right to vote in local elections.", a: "Citizen" },
+            { q: "The safety of every ___ is the priority of the Public Safety department.", a: "Citizen" },
+            // Resident
+            { q: "A person who lives somewhere permanently is a ___.", a: "Resident" },
+            { q: "If you live in an apartment in the city, you are a ___ of that city.", a: "Resident" },
+            { q: "The City Manager handles many questions from local ___s.", a: "Resident" },
+            { q: "A ___ is someone who occupies a home on a long-term basis.", a: "Resident" },
+            { q: "Parking permits are only given to a ___ of that specific street.", a: "Resident" },
+            { q: "You don't have to be a citizen to be a ___, you just have to live there.", a: "Resident" },
+            { q: "The new park is open to any ___ of the neighborhood.", a: "Resident" },
+            { q: "Long-term occupants of a town are its ___s.", a: "Resident" },
+            // City Councilor
+            { q: "An elected member who helps make local laws is a ___.", a: "City Councilor" },
+            { q: "Also known as an Alderman, this person votes on city decisions.", a: "City Councilor" },
+            { q: "A ___ represents a specific district within the municipality.", a: "City Councilor" },
+            { q: "Who drafts and passes the local ordinances?", a: "City Councilor" },
+            { q: "The ___ debated the new city budget at the Town Hall.", a: "City Councilor" },
+            { q: "An elected official who serves on the city's legislative body is a ___.", a: "City Councilor" },
+            { q: "If you want to change a bylaw, you should talk to your local ___.", a: "City Councilor" },
+            { q: "The Mayor and the ___s voted to approve the new infrastructure project.", a: "City Councilor" },
+            // Civil Servant
+            { q: "A person employed in the public sector by a government department is a ___.", a: "Civil Servant" },
+            { q: "Maria works at the Town Hall as a dedicated ___.", a: "Civil Servant" },
+            { q: "A public employee who is not elected but hired is typically a ___.", a: "Civil Servant" },
+            { q: "Which term describes workers like postal workers and public administrators?", a: "Civil Servant" },
+            { q: "A ___ serves the public through government agencies.", a: "Civil Servant" },
+            { q: "Working for the municipality as a permanent employee makes you a ___.", a: "Civil Servant" },
+            { q: "An appointed government worker is also known as a ___.", a: "Civil Servant" },
+            { q: "The ___ processed the paperwork at the Registry Office.", a: "Civil Servant" },
+            // Constituent
+            { q: "A voting member of a community represented by an elected official is a ___.", a: "Constituent" },
+            { q: "Politicians often hold town meetings to listen to their ___s.", a: "Constituent" },
+            { q: "If you live in the Mayor's district, you are their ___.", a: "Constituent" },
+            { q: "Elected officials must answer to their ___s.", a: "Constituent" },
+            { q: "A ___ is any person living in an area represented by a specific politician.", a: "Constituent" },
+            { q: "The City Councilor sent a newsletter to every ___ in her district.", a: "Constituent" },
+            { q: "Representing the needs of every ___ is a politician's main job.", a: "Constituent" },
+            { q: "When a citizen votes for a representative, they act as a ___.", a: "Constituent" },
+            // City Manager
+            { q: "An appointed official who directs the daily administration of a city is the ___.", a: "City Manager" },
+            { q: "Unlike the Mayor, the ___ is usually hired, not elected.", a: "City Manager" },
+            { q: "Who handles the day-to-day operations of the municipality?", a: "City Manager" },
+            { q: "The ___ oversees all city departments and their budgets.", a: "City Manager" },
+            { q: "Maria works as an assistant to the ___, handling citizen complaints.", a: "City Manager" },
+            { q: "The city council appointed a new ___ to improve public services.", a: "City Manager" },
+            { q: "Which official is essentially the CEO of the local government?", a: "City Manager" },
+            { q: "The ___ ensures that the Mayor's policies are executed properly.", a: "City Manager" },
+            // Town Hall
+            { q: "The headquarters of city administration is the ___.", a: "Town Hall" },
+            { q: "Where are the city council chambers usually located?", a: "Town Hall" },
+            { q: "The Mayor's office is typically found in the ___.", a: "Town Hall" },
+            { q: "Maria is a dedicated civil servant working at the local ___.", a: "Town Hall" },
+            { q: "The city council met at the ___ to discuss the new budget.", a: "Town Hall" },
+            { q: "Where do local government officials have their main administrative offices?", a: "Town Hall" },
+            { q: "Citizens gathered in front of the ___ to protest the new ordinance.", a: "Town Hall" },
+            { q: "The central administrative building of a municipal government is the ___.", a: "Town Hall" },
+            // Public Library
+            { q: "A building where you can borrow books and access computers is the ___.", a: "Public Library" },
+            { q: "Which facility is funded by local taxes to provide educational resources?", a: "Public Library" },
+            { q: "The Public Works department repaved the parking lot at the ___.", a: "Public Library" },
+            { q: "Where can a resident go to read or study for free?", a: "Public Library" },
+            { q: "The ___ offers free internet access and community classes.", a: "Public Library" },
+            { q: "If you need to check out a novel, you visit the ___.", a: "Public Library" },
+            { q: "A quiet public building dedicated to reading and learning is a ___.", a: "Public Library" },
+            { q: "The city's ___ is adding a new wing for children's books.", a: "Public Library" },
+            // Courthouse
+            { q: "A building where legal disputes are resolved is a ___.", a: "Courthouse" },
+            { q: "Where are courts of law held?", a: "Courthouse" },
+            { q: "If you are called for jury duty, you must go to the ___.", a: "Courthouse" },
+            { q: "The judge and lawyers work at the local ___.", a: "Courthouse" },
+            { q: "Where are criminal and civil trials conducted?", a: "Courthouse" },
+            { q: "Legal disputes over local bylaws are often settled at the ___.", a: "Courthouse" },
+            { q: "The ___ is heavily guarded by the Public Safety department.", a: "Courthouse" },
+            { q: "Citizens serving their civic duty on a jury report to the ___.", a: "Courthouse" },
+            // Community Center
+            { q: "A public location where members gather for group activities is a ___.", a: "Community Center" },
+            { q: "Where can citizens find social support and public information locally?", a: "Community Center" },
+            { q: "The new ___ hosts after-school programs and senior citizen yoga.", a: "Community Center" },
+            { q: "A neighborhood hub for social and recreational activities is the ___.", a: "Community Center" },
+            { q: "The Mayor gave a speech at the opening of the new ___.", a: "Community Center" },
+            { q: "Where might a town hold an indoor neighborhood gathering?", a: "Community Center" },
+            { q: "The ___ offers free workshops and local events.", a: "Community Center" },
+            { q: "A local facility built to promote social cohesion is a ___.", a: "Community Center" },
+            // Public Works
+            { q: "The department responsible for building and maintaining city infrastructure is ___.", a: "Public Works" },
+            { q: "Who fixes potholes and maintains the main bridges?", a: "Public Works" },
+            { q: "If a street needs to be repaved, you call the ___ department.", a: "Public Works" },
+            { q: "The ___ department manages the city's water supply and roads.", a: "Public Works" },
+            { q: "Which department repaved the parking lot at the Public Library?", a: "Public Works" },
+            { q: "Repairing the city's power grids is coordinated by ___.", a: "Public Works" },
+            { q: "The budget was increased to help ___ fix the old highways.", a: "Public Works" },
+            { q: "Heavy machinery used to repair roads belongs to the ___ department.", a: "Public Works" },
+            // Registry Office
+            { q: "A government office where official records are kept is the ___.", a: "Registry Office" },
+            { q: "Where do you get copies of birth, marriage, and death certificates?", a: "Registry Office" },
+            { q: "To legally record your new marriage, you visit the ___.", a: "Registry Office" },
+            { q: "The ___ maintains the vital statistics of the municipality's residents.", a: "Registry Office" },
+            { q: "If you lose your birth certificate, you apply for a new one at the ___.", a: "Registry Office" },
+            { q: "Official public records of the citizens are stored at the ___.", a: "Registry Office" },
+            { q: "The civil servant at the ___ processed my paperwork.", a: "Registry Office" },
+            { q: "You must go to the ___ to officially register a newborn baby.", a: "Registry Office" },
+            // Sanitation
+            { q: "The department responsible for garbage collection is ___.", a: "Sanitation" },
+            { q: "Who handles recycling and street cleaning?", a: "Sanitation" },
+            { q: "Every Tuesday, the trucks from the ___ department pick up our trash.", a: "Sanitation" },
+            { q: "Waste Management is another term for the ___ department.", a: "Sanitation" },
+            { q: "To report a missed trash pickup, you contact ___.", a: "Sanitation" },
+            { q: "The ___ department ensures the city streets remain clean and hygienic.", a: "Sanitation" },
+            { q: "Recycling programs are managed by the ___ division.", a: "Sanitation" },
+            { q: "Proper ___ is essential to prevent disease in a dense municipality.", a: "Sanitation" },
+            // Public Transportation
+            { q: "Government-funded transit systems like buses and subways are ___.", a: "Public Transportation" },
+            { q: "Maria took ___ back home after work.", a: "Public Transportation" },
+            { q: "Trains, trams, and city buses are part of ___.", a: "Public Transportation" },
+            { q: "To reduce traffic, the city invests in better ___.", a: "Public Transportation" },
+            { q: "A network of transit vehicles available for public use is ___.", a: "Public Transportation" },
+            { q: "Commuters rely on ___ to get to work without a car.", a: "Public Transportation" },
+            { q: "The city budget allocated funds for new subway trains for ___.", a: "Public Transportation" },
+            { q: "Expanding the bus routes improves the city's ___.", a: "Public Transportation" },
+            // Utilities
+            { q: "Essential services like water, electricity, and gas are ___.", a: "Utilities" },
+            { q: "Sewage treatment is considered one of the public ___.", a: "Utilities" },
+            { q: "The ___ we use daily in our homes are often regulated by the city.", a: "Utilities" },
+            { q: "If your water is shut off, you must call the ___ department.", a: "Utilities" },
+            { q: "Power grids and water supply networks provide ___.", a: "Utilities" },
+            { q: "Residents pay monthly bills for their ___.", a: "Utilities" },
+            { q: "Essential public provisions for a home are called ___.", a: "Utilities" },
+            { q: "The storm damaged the power lines, cutting off ___ to the neighborhood.", a: "Utilities" },
+            // Public Safety
+            { q: "The Police and Fire Departments are part of ___.", a: "Public Safety" },
+            { q: "Departments dedicated to the safety of citizens make up ___.", a: "Public Safety" },
+            { q: "Emergency Medical Services (EMS) belongs to the ___ sector.", a: "Public Safety" },
+            { q: "Which department protects the community from crime and fires?", a: "Public Safety" },
+            { q: "A large portion of the budget goes to ___ to hire more officers.", a: "Public Safety" },
+            { q: "The ___ department responds to 911 emergency calls.", a: "Public Safety" },
+            { q: "Ensuring the physical security of residents is the goal of ___.", a: "Public Safety" },
+            { q: "The ___ chief gave a report on the declining crime rate.", a: "Public Safety" },
+            // Urban Planning
+            { q: "The department that decides how land is used is ___.", a: "Urban Planning" },
+            { q: "Who handles zoning for residential, commercial, or industrial areas?", a: "Urban Planning" },
+            { q: "The ___ department ensures organized growth of the city.", a: "Urban Planning" },
+            { q: "Before building a new factory, you need approval from ___.", a: "Urban Planning" },
+            { q: "To change a residential area into a commercial one, you go through ___.", a: "Urban Planning" },
+            { q: "The layout of new neighborhoods is designed by ___.", a: "Urban Planning" },
+            { q: "Zoning laws are enforced by the ___ division.", a: "Urban Planning" },
+            { q: "To prevent factories near schools, the city uses ___.", a: "Urban Planning" },
+            // Parks and Recreation
+            { q: "The department that maintains public playgrounds is ___.", a: "Parks and Recreation" },
+            { q: "Who organizes recreational programs and summer camps?", a: "Parks and Recreation" },
+            { q: "Maintaining the city's green spaces is the job of ___.", a: "Parks and Recreation" },
+            { q: "If a tree falls in a public park, ___ clears it.", a: "Parks and Recreation" },
+            { q: "The ___ department built a new swimming pool for the residents.", a: "Parks and Recreation" },
+            { q: "City sports leagues are organized by ___.", a: "Parks and Recreation" },
+            { q: "The ___ budget covers the upkeep of all hiking trails.", a: "Parks and Recreation" },
+            { q: "Which department focuses on the leisure activities of citizens?", a: "Parks and Recreation" },
+            // Municipality
+            { q: "A city or town that has corporate status and local government is a ___.", a: "Municipality" },
+            { q: "The Mayor is the elected head of a ___.", a: "Municipality" },
+            { q: "Maria was proud of the work she did for her ___.", a: "Municipality" },
+            { q: "An incorporated local area with self-government is a ___.", a: "Municipality" },
+            { q: "The ___ is responsible for providing local services.", a: "Municipality" },
+            { q: "Every citizen within the ___ must follow its bylaws.", a: "Municipality" },
+            { q: "The boundaries of the ___ determine who pays local taxes.", a: "Municipality" },
+            { q: "Another word for an incorporated town or city is ___.", a: "Municipality" },
+            // Ordinance
+            { q: "A local law enacted by a city council is an ___.", a: "Ordinance" },
+            { q: "The new noise ___ bans loud music after 9:00 PM.", a: "Ordinance" },
+            { q: "A municipal regulation, such as a parking rule, is an ___.", a: "Ordinance" },
+            { q: "The city council passed a new ___ restricting water usage.", a: "Ordinance" },
+            { q: "Citizens argued that the new ___ was too strict.", a: "Ordinance" },
+            { q: "If you violate a local ___, you may have to pay a fine.", a: "Ordinance" },
+            { q: "An ___ is legally binding only within the city limits.", a: "Ordinance" },
+            { q: "The Mayor vetoed the new zoning ___.", a: "Ordinance" },
+            // Civic Duty
+            { q: "Responsibilities of a citizen, like voting, are considered a ___.", a: "Civic Duty" },
+            { q: "Serving on a jury when called is your ___.", a: "Civic Duty" },
+            { q: "Paying taxes to fund public services is a ___.", a: "Civic Duty" },
+            { q: "Participating in local elections is an important ___.", a: "Civic Duty" },
+            { q: "Good citizens take their ___ seriously.", a: "Civic Duty" },
+            { q: "Attending community meetings is a voluntary ___.", a: "Civic Duty" },
+            { q: "Fulfilling your ___ helps the municipality function properly.", a: "Civic Duty" },
+            { q: "Every resident shares a ___ to keep the neighborhood safe.", a: "Civic Duty" },
+            // Infrastructure
+            { q: "The basic physical systems of a city (roads, bridges) are its ___.", a: "Infrastructure" },
+            { q: "Power grids and water supply networks are part of the ___.", a: "Infrastructure" },
+            { q: "The Public Works department builds and maintains city ___.", a: "Infrastructure" },
+            { q: "Our city's ___ is failing; the roads are full of potholes.", a: "Infrastructure" },
+            { q: "Economic growth requires a strong physical ___.", a: "Infrastructure" },
+            { q: "Replacing old pipes improves the underground ___.", a: "Infrastructure" },
+            { q: "Taxation funds the maintenance of local ___.", a: "Infrastructure" },
+            { q: "The new budget includes a massive ___ project for highways.", a: "Infrastructure" },
+            // Taxation
+            { q: "Money collected by local government to fund services is ___.", a: "Taxation" },
+            { q: "Property taxes are a common form of local ___.", a: "Taxation" },
+            { q: "The finance team checked the money collected from local ___.", a: "Taxation" },
+            { q: "The new library project was funded by ___.", a: "Taxation" },
+            { q: "Without ___, the city could not afford to pay the civil servants.", a: "Taxation" },
+            { q: "___ is the process of collecting revenue for public use.", a: "Taxation" },
+            { q: "The citizens voted against an increase in ___.", a: "Taxation" },
+            { q: "Funding for Public Safety comes directly from ___.", a: "Taxation" },
+            // Budget
+            { q: "The city's financial plan for spending is the ___.", a: "Budget" },
+            { q: "The city council met at Town Hall to discuss the new ___.", a: "Budget" },
+            { q: "Maria sat down with the finance team to review the city's ___.", a: "Budget" },
+            { q: "Without an approved ___, the municipality cannot spend money.", a: "Budget" },
+            { q: "The ___ details how much money goes to each department.", a: "Budget" },
+            { q: "Funding for Public Works was cut from this year's ___.", a: "Budget" },
+            { q: "The Mayor proposed a balanced ___ for the upcoming year.", a: "Budget" },
+            { q: "Allocating funds accurately is the main purpose of a ___.", a: "Budget" },
+            // Bylaw
+            { q: "A rule established by a community to regulate itself is a ___.", a: "Bylaw" },
+            { q: "A local regulation similar to an ordinance is a ___.", a: "Bylaw" },
+            { q: "The homeowners' association created a new ___.", a: "Bylaw" },
+            { q: "A municipal ___ prohibits parking on this street overnight.", a: "Bylaw" },
+            { q: "If you break a ___, you might receive a citation.", a: "Bylaw" },
+            { q: "The city council amended the ___ regarding pet ownership.", a: "Bylaw" },
+            { q: "A ___ is designed to maintain order within an organization or town.", a: "Bylaw" },
+            { q: "Enforcing every local ___ is part of Public Safety.", a: "Bylaw" }
+        ];
+
+        const feedbackSuccess = ["Wow!", "Excellent!", "You are a genius!", "Good job!", "Wonderful!", "Amazing!", "Spectacular!", "Outstanding!", "Brilliant!"];
+        const feedbackFail = ["What a pity!", "Wrong!", "Try again!", "Oops!", "Not quite!", "Oh no!", "Keep trying!", "Time's up!"];
+
+        // --- CORE FUNCTIONS ---
+        function shuffleArray(array) { return array.sort(() => Math.random() - 0.5); }
+
+        function speak(text) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'en-US';
+                utterance.rate = 0.9;
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        window.playCurrentAudio = function() {
+            if (!currentQ) return;
+            const textToRead = currentQ.questionText.replace("___", "blank");
+            speak(textToRead);
+        }
+
+        window.switchScreen = function(screenId) {
+            ['welcome-screen', 'countdown-screen', 'playing-screen', 'gameover-screen', 'leaderboard-screen'].forEach(id => {
+                document.getElementById(id).classList.add('hidden');
+            });
+            document.getElementById(screenId).classList.remove('hidden');
+
+            if(screenId === 'playing-screen'){
+                document.getElementById('bg-decorations').classList.remove('hidden');
+                stopLeaderboardPolling();
+            } else if (screenId === 'welcome-screen' || screenId === 'leaderboard-screen') {
+                document.getElementById('bg-decorations').classList.add('hidden');
+                startLeaderboardPolling();
+            }
+        }
+
+        function requestFullScreen() {
+            const docElm = document.documentElement;
+            if (docElm.requestFullscreen) docElm.requestFullscreen().catch(err => console.log("Fullscreen error:", err));
+        }
+
+        function exitFullScreen() {
+            if (document.fullscreenElement) document.exitFullscreen().catch(err => console.log("Exit fullscreen error:", err));
+        }
+
+        // --- GAME LOGIC ---
+        function generateRandomQuestion() {
+            const qObj = QUESTION_BANK[Math.floor(Math.random() * QUESTION_BANK.length)];
+            const questionText = qObj.q;
+            const answer = qObj.a;
+            const hint = HINTS[answer] || "Think about public services and administration!";
+
+            // Generate 3 random distractors from VOCAB_WORDS
+            let availableWords = VOCAB_WORDS.filter(w => w !== answer);
+            availableWords = shuffleArray(availableWords);
+            const distractors = availableWords.slice(0, 3);
+
+            const options = shuffleArray([answer, ...distractors]);
+            return { questionText, answer, options, hint };
+        }
+
+        window.startGame = function() {
+            playerName = document.getElementById('player-name').value.trim();
+            if (!playerName) {
+                document.getElementById('name-error').classList.remove('hidden');
+                return;
+            }
+            document.getElementById('name-error').classList.add('hidden');
+
+            if ('speechSynthesis' in window) {
+                const silent = new SpeechSynthesisUtterance('');
+                silent.volume = 0;
+                window.speechSynthesis.speak(silent);
+            }
+            
+            requestFullScreen();
+
+            score = 0;
+            lives = 5;
+            level = 1;
+            totalTimeAlive = 0;
+            updateUI();
+
+            window.switchScreen('countdown-screen');
+            let countdown = 3;
+            const textEl = document.getElementById('countdown-text');
+            textEl.innerText = countdown;
+            speak(countdown.toString());
+
+            const interval = setInterval(() => {
+                countdown--;
+                if (countdown > 0) {
+                    textEl.innerText = countdown;
+                    speak(countdown.toString());
+                } else if (countdown === 0) {
+                    textEl.innerText = "GO!";
+                    speak("Go!");
+                } else {
+                    clearInterval(interval);
+                    window.switchScreen('playing-screen');
+                    loadNewQuestion();
+                }
+            }, 1000);
+        }
+
+        window.stopGame = function() {
+            clearInterval(timerInterval);
+            exitFullScreen();
+            window.switchScreen('welcome-screen');
+            window.speechSynthesis.cancel();
+        }
+
+        function renderHearts() {
+            const container = document.getElementById('hearts-container');
+            container.innerHTML = '';
+            for(let i = 0; i < 5; i++) {
+                const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+                svg.setAttribute('width', '28');
+                svg.setAttribute('height', '28');
+                svg.setAttribute('viewBox', '0 0 24 24');
+                svg.setAttribute('stroke', 'currentColor');
+                svg.setAttribute('stroke-width', '2');
+                svg.setAttribute('stroke-linecap', 'round');
+                svg.setAttribute('stroke-linejoin', 'round');
+                
+                if (i < lives) svg.setAttribute('class', 'heart-active');
+                else svg.setAttribute('class', 'heart-inactive');
+
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z');
+                svg.appendChild(path);
+                container.appendChild(svg);
+            }
+        }
+
+        function updateUI() {
+            level = Math.floor(score / 10) + 1;
+            document.getElementById('level-display').innerText = `Level ${level}`;
+            document.getElementById('score-display').innerText = score;
+            renderHearts();
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            questionTimeLimit = Math.max(5, 15 - (level - 1) * 1.5); 
+            currentTimer = questionTimeLimit;
+            questionStartTime = Date.now();
+            
+            const timerBar = document.getElementById('timer-bar');
+            timerBar.style.width = '100%';
+            timerBar.className = 'bg-gradient-to-r from-green-400 to-emerald-500 h-2 transition-all duration-100 ease-linear';
+
+            timerInterval = setInterval(() => {
+                if (isProcessing) return;
+                
+                const elapsed = (Date.now() - questionStartTime) / 1000;
+                currentTimer = questionTimeLimit - elapsed;
+                
+                if (currentTimer <= 0) {
+                    currentTimer = 0;
+                    clearInterval(timerInterval);
+                    timerBar.style.width = '0%';
+                    handleTimeout();
+                } else {
+                    const percentage = (currentTimer / questionTimeLimit) * 100;
+                    timerBar.style.width = percentage + '%';
+                    
+                    if (percentage < 30) {
+                        timerBar.className = 'bg-gradient-to-r from-red-500 to-pink-600 h-2 transition-all duration-100 ease-linear';
+                    } else if (percentage < 60) {
+                        timerBar.className = 'bg-gradient-to-r from-amber-400 to-orange-500 h-2 transition-all duration-100 ease-linear';
+                    }
+                }
+            }, 50);
+        }
+
+        function stopAndRecordTime() {
+            clearInterval(timerInterval);
+            const elapsed = (Date.now() - questionStartTime) / 1000;
+            totalTimeAlive += Math.min(elapsed, questionTimeLimit);
+        }
+
+        function loadNewQuestion() {
+            currentQ = generateRandomQuestion();
+            isProcessing = false;
+            
+            const parts = currentQ.questionText.split('___');
+            const qContainer = document.getElementById('question-text');
+            qContainer.innerHTML = '';
+            
+            parts.forEach((part, index) => {
+                qContainer.appendChild(document.createTextNode(part));
+                if (index < parts.length - 1) {
+                    const span = document.createElement('span');
+                    span.className = 'inline-block mx-2 w-32 md:w-48 border-b-4 border-indigo-400 align-baseline';
+                    qContainer.appendChild(span);
+                }
+            });
+
+            const optContainer = document.getElementById('options-container');
+            optContainer.innerHTML = '';
+            currentQ.options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full py-5 px-6 rounded-2xl text-xl md:text-2xl font-semibold transition-all duration-200 shadow-sm border-2 bg-white border-slate-200 text-slate-700 hover:border-indigo-400 hover:shadow-md hover:text-indigo-600 hover:scale-[1.02] active:scale-[0.98] cursor-pointer';
+                btn.innerText = option;
+                btn.onclick = () => window.handleAnswer(option, btn);
+                optContainer.appendChild(btn);
+            });
+
+            document.getElementById('show-hint-btn').classList.remove('hidden');
+            document.getElementById('hint-content').classList.add('hidden');
+            document.getElementById('hint-text').innerText = currentQ.hint;
+            document.getElementById('question-card').classList.remove('hidden');
+
+            startTimer();
+
+            setTimeout(() => { window.playCurrentAudio(); }, 500);
+        }
+
+        window.showHint = function() {
+            document.getElementById('show-hint-btn').classList.add('hidden');
+            document.getElementById('hint-content').classList.remove('hidden');
+        }
+
+        window.handleAnswer = function(selectedOption, buttonElement) {
+            if (isProcessing) return;
+            isProcessing = true;
+            stopAndRecordTime();
+
+            const buttons = document.getElementById('options-container').querySelectorAll('button');
+            buttons.forEach(b => {
+                b.classList.add('opacity-50', 'cursor-not-allowed');
+                b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer');
+            });
+
+            const isCorrect = selectedOption === currentQ.answer;
+            const overlay = document.getElementById('feedback-overlay');
+            const feedbackText = document.getElementById('feedback-text');
+
+            if (isCorrect) {
+                const msg = feedbackSuccess[Math.floor(Math.random() * feedbackSuccess.length)];
+                feedbackText.innerText = msg;
+                feedbackText.className = "text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center text-green-500";
+                overlay.classList.remove('hidden');
+                speak(msg);
+                
+                score++;
+                updateUI();
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    document.getElementById('question-card').classList.add('hidden');
+                    loadNewQuestion();
+                }, 2000);
+
+            } else {
+                const msg = feedbackFail[Math.floor(Math.random() * (feedbackFail.length - 1))]; 
+                feedbackText.innerText = msg;
+                feedbackText.className = "text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center text-red-500";
+                overlay.classList.remove('hidden');
+                speak(msg);
+                
+                lives--;
+                updateUI();
+                
+                setTimeout(() => {
+                    overlay.classList.add('hidden');
+                    if (lives <= 0) gameOver();
+                    else {
+                        document.getElementById('question-card').classList.add('hidden');
+                        loadNewQuestion();
+                    }
+                }, 2000);
+            }
+        }
+
+        function handleTimeout() {
+            if (isProcessing) return;
+            isProcessing = true;
+            stopAndRecordTime();
+            
+            const buttons = document.getElementById('options-container').querySelectorAll('button');
+            buttons.forEach(b => {
+                b.classList.add('opacity-50', 'cursor-not-allowed');
+                b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer');
+            });
+
+            const msg = "Time's up!";
+            const overlay = document.getElementById('feedback-overlay');
+            const feedbackText = document.getElementById('feedback-text');
+            
+            feedbackText.innerText = msg;
+            feedbackText.className = "text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center text-red-500";
+            overlay.classList.remove('hidden');
+            speak(msg);
+            
+            lives--;
+            updateUI();
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                if (lives <= 0) gameOver();
+                else {
+                    document.getElementById('question-card').classList.add('hidden');
+                    loadNewQuestion();
+                }
+            }, 2000);
+        }
+
+        async function gameOver() {
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('final-level').innerText = level;
+            document.getElementById('final-time').innerText = totalTimeAlive.toFixed(1);
+            
+            window.switchScreen('gameover-screen');
+            speak("Game Over. You did your best!");
+
+            const newRecord = {
+                name: playerName || "Unknown",
+                score: Number(score),
+                timeAlive: Number(parseFloat(totalTimeAlive).toFixed(1)),
+                ip: userIP 
+            };
+
+            // GRABADO A GOOGLE SHEETS
+            if (GOOGLE_SHEETS_URL.trim() !== "") {
+                try {
+                    await fetch(GOOGLE_SHEETS_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain;charset=utf-8', 
+                        },
+                        body: JSON.stringify(newRecord)
+                    });
+                    console.log("Guardado en Google Sheets correctamente.");
+                    fetchLeaderboardData(); // Refrescar base de datos visual
+                } catch (e) {
+                    console.error("No se pudo guardar en Google Sheets.", e);
+                    fallbackLocalSave(newRecord);
+                }
+            } else {
+                fallbackLocalSave(newRecord);
+            }
+        }
+
+        function fallbackLocalSave(newRecord) {
+            leaderboardData.push(newRecord);
+            leaderboardData.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.timeAlive - b.timeAlive; 
+            });
+            updateLeaderboardUI();
+        }
+
+        // --- GOOGLE SHEETS FETCHING LOGIC ---
+        async function fetchLeaderboardData() {
+            if (GOOGLE_SHEETS_URL.trim() === "") {
+                updateLeaderboardUI();
+                return;
+            }
+
+            try {
+                const response = await fetch(GOOGLE_SHEETS_URL);
+                const data = await response.json();
+                leaderboardData = data;
+                document.getElementById('offline-badge').classList.add('hidden');
+                updateLeaderboardUI();
+            } catch (e) {
+                console.error("Error obteniendo datos de Google Sheets:", e);
+                document.getElementById('offline-badge').classList.remove('hidden');
+                document.getElementById('offline-text').innerText = "Sin conexión a Google Sheets.";
+                updateLeaderboardUI(); // Muestra caché local si falla
+            }
+        }
+
+        function startLeaderboardPolling() {
+            if(leaderboardPollingInterval) clearInterval(leaderboardPollingInterval);
+            fetchLeaderboardData(); 
+            leaderboardPollingInterval = setInterval(fetchLeaderboardData, 10000); 
+        }
+
+        function stopLeaderboardPolling() {
+            if(leaderboardPollingInterval) clearInterval(leaderboardPollingInterval);
+        }
+
+        function updateLeaderboardUI() {
+            const miniList = document.getElementById('mini-leaderboard-list');
+            if (miniList) {
+                const top5 = leaderboardData.slice(0, 5);
+                miniList.innerHTML = '';
+                if (top5.length === 0) {
+                    miniList.innerHTML = '<p class="text-gray-400 text-center mt-4">No records yet! Be the first!</p>';
+                } else {
+                    top5.forEach((row, index) => {
+                        const div = document.createElement('div');
+                        div.className = 'flex justify-between items-center bg-white/5 px-4 py-3 rounded-xl border border-white/5';
+                        const isTop1 = index === 0 ? 'text-yellow-400 font-bold' : 'text-gray-200';
+                        
+                        div.innerHTML = `
+                            <div class="flex items-center space-x-3 truncate">
+                                <span class="${isTop1} text-lg">#${index + 1}</span>
+                                <span class="font-medium truncate max-w-[120px] text-left text-base">${row.name}</span>
+                            </div>
+                            <div class="flex flex-col items-end">
+                                <span class="text-indigo-300 font-bold text-sm">${row.score} pts</span>
+                                <span class="text-gray-400 text-xs">${row.timeAlive}s</span>
+                            </div>
+                        `;
+                        miniList.appendChild(div);
+                    });
+                }
+            }
+
+            const listEl = document.getElementById('leaderboard-list');
+            if (listEl) {
+                const top50 = leaderboardData.slice(0, 50); 
+                listEl.innerHTML = '';
+                if (top50.length === 0) {
+                    listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">No records yet!</td></tr>';
+                } else {
+                    top50.forEach((row, index) => {
+                        const tr = document.createElement('tr');
+                        tr.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
+                        const isTop1 = index === 0 ? 'text-yellow-400 font-black text-2xl drop-shadow-md' : '';
+                        const isTop2 = index === 1 ? 'text-gray-300 font-bold text-xl' : '';
+                        const isTop3 = index === 2 ? 'text-amber-600 font-bold text-xl' : '';
+
+                        tr.innerHTML = `
+                            <td class="p-4 ${isTop1 || isTop2 || isTop3}">#${index + 1}</td>
+                            <td class="p-4 font-bold truncate max-w-[120px] md:max-w-[200px]">${row.name}</td>
+                            <td class="p-4 text-center font-black text-indigo-300">${row.score}</td>
+                            <td class="p-4 text-right text-gray-400">${row.timeAlive}s</td>
+                        `;
+                        listEl.appendChild(tr);
+                    });
+                }
+            }
+        }
+
+        window.showLeaderboard = function(returnScreen = 'welcome-screen') {
+            document.getElementById('lb-back-btn').onclick = () => window.switchScreen(returnScreen);
+            window.switchScreen('leaderboard-screen');
+        }
+
+        renderHearts();
+        startLeaderboardPolling();
+    </script>
+</body>
+</html>
