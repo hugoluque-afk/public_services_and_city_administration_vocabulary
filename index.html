@@ -175,8 +175,8 @@
         <main class="flex-1 flex flex-col items-center justify-center p-4 w-full max-w-4xl mx-auto relative z-0">
             
             <!-- Feedback Overlay -->
-            <div id="feedback-overlay" class="hidden absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-sm rounded-3xl transition-opacity duration-200">
-                <h2 id="feedback-text" class="text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center">
+            <div id="feedback-overlay" class="hidden absolute inset-0 z-30 flex items-center justify-center pointer-events-none">
+                <h2 id="feedback-text" class="text-4xl md:text-6xl font-black drop-shadow-2xl animate-bounce-custom text-center text-white bg-green-500 px-8 py-4 rounded-full border-4 border-white shadow-2xl inline-block">
                     Wow!
                 </h2>
             </div>
@@ -818,20 +818,34 @@
             isProcessing = true;
             stopAndRecordTime();
 
+            const isCorrect = selectedOption === currentQ.answer;
+
+            // Visual feedback on buttons
             const buttons = document.getElementById('options-container').querySelectorAll('button');
             buttons.forEach(b => {
-                b.classList.add('opacity-50', 'cursor-not-allowed');
-                b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer');
+                // Remove interactive classes
+                b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer', 'hover:border-indigo-400', 'hover:text-indigo-600', 'bg-white', 'text-slate-700', 'border-slate-200');
+                b.classList.add('cursor-not-allowed');
+
+                if (b.innerText === currentQ.answer) {
+                    // Highlight correct answer in GREEN
+                    b.classList.add('bg-green-500', 'text-white', 'border-green-600', 'shadow-xl', 'scale-[1.02]');
+                } else if (b.innerText === selectedOption && !isCorrect) {
+                    // Highlight wrong selected answer in RED
+                    b.classList.add('bg-red-500', 'text-white', 'border-red-600');
+                } else {
+                    // Keep other unselected wrong answers readable but muted
+                    b.classList.add('bg-slate-100', 'text-slate-400', 'border-slate-200', 'opacity-80');
+                }
             });
 
-            const isCorrect = selectedOption === currentQ.answer;
             const overlay = document.getElementById('feedback-overlay');
             const feedbackText = document.getElementById('feedback-text');
 
             if (isCorrect) {
                 const msg = feedbackSuccess[Math.floor(Math.random() * feedbackSuccess.length)];
                 feedbackText.innerText = msg;
-                feedbackText.className = "text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center text-green-500";
+                feedbackText.className = "text-4xl md:text-6xl font-black drop-shadow-2xl animate-bounce-custom text-center text-white bg-green-500 px-8 py-4 rounded-full border-4 border-white shadow-2xl inline-block";
                 overlay.classList.remove('hidden');
                 speak(msg);
                 
@@ -842,12 +856,12 @@
                     overlay.classList.add('hidden');
                     document.getElementById('question-card').classList.add('hidden');
                     loadNewQuestion();
-                }, 2000);
+                }, 3000);
 
             } else {
                 const msg = feedbackFail[Math.floor(Math.random() * (feedbackFail.length - 1))]; 
                 feedbackText.innerText = msg;
-                feedbackText.className = "text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center text-red-500";
+                feedbackText.className = "text-4xl md:text-6xl font-black drop-shadow-2xl animate-bounce-custom text-center text-white bg-red-500 px-8 py-4 rounded-full border-4 border-white shadow-2xl inline-block";
                 overlay.classList.remove('hidden');
                 speak(msg);
                 
@@ -861,7 +875,7 @@
                         document.getElementById('question-card').classList.add('hidden');
                         loadNewQuestion();
                     }
-                }, 2000);
+                }, 3000);
             }
         }
 
@@ -870,10 +884,18 @@
             isProcessing = true;
             stopAndRecordTime();
             
+            // Visual feedback on buttons for timeout
             const buttons = document.getElementById('options-container').querySelectorAll('button');
             buttons.forEach(b => {
-                b.classList.add('opacity-50', 'cursor-not-allowed');
-                b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer');
+                b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer', 'hover:border-indigo-400', 'hover:text-indigo-600', 'bg-white', 'text-slate-700', 'border-slate-200');
+                b.classList.add('cursor-not-allowed');
+
+                if (b.innerText === currentQ.answer) {
+                    // Reveal the correct answer in GREEN
+                    b.classList.add('bg-green-500', 'text-white', 'border-green-600', 'shadow-xl', 'scale-[1.02]');
+                } else {
+                    b.classList.add('bg-slate-100', 'text-slate-400', 'border-slate-200', 'opacity-80');
+                }
             });
 
             const msg = "Time's up!";
@@ -881,7 +903,7 @@
             const feedbackText = document.getElementById('feedback-text');
             
             feedbackText.innerText = msg;
-            feedbackText.className = "text-6xl md:text-8xl font-black drop-shadow-xl animate-bounce-custom text-center text-red-500";
+            feedbackText.className = "text-4xl md:text-6xl font-black drop-shadow-2xl animate-bounce-custom text-center text-white bg-red-500 px-8 py-4 rounded-full border-4 border-white shadow-2xl inline-block";
             overlay.classList.remove('hidden');
             speak(msg);
             
@@ -895,7 +917,7 @@
                     document.getElementById('question-card').classList.add('hidden');
                     loadNewQuestion();
                 }
-            }, 2000);
+            }, 3000);
         }
 
         async function gameOver() {
