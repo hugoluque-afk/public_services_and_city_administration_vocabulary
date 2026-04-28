@@ -55,6 +55,22 @@
             -ms-user-select: none;
             user-select: none;
         }
+
+        /* Autocomplete scrollbar styling */
+        #custom-autocomplete-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        #custom-autocomplete-list::-webkit-scrollbar-track {
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+        #custom-autocomplete-list::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 8px;
+        }
+        #custom-autocomplete-list::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
     </style>
 </head>
 <body class="no-select text-slate-800">
@@ -91,9 +107,14 @@
                     Master City Administration and Public Services Vocabulary. Over 200+ unique exercises!
                 </p>
 
-                <div class="max-w-sm mx-auto w-full mt-4 mb-4 relative">
-                    <input type="text" id="player-name" placeholder="Enter your name to start..." class="w-full px-6 py-4 rounded-full text-slate-800 font-bold text-xl text-center focus:outline-none focus:ring-4 focus:ring-pink-500 shadow-inner" maxlength="20">
-                    <p id="name-error" class="hidden text-red-300 font-semibold mt-2 drop-shadow-md">Please enter your name!</p>
+                <div class="max-w-sm mx-auto w-full mt-4 mb-4 relative z-50">
+                    <input type="text" id="player-name" placeholder="Enter your name to start..." autocomplete="off" class="w-full px-6 py-4 rounded-full text-[#1e293b] font-bold text-xl text-center focus:outline-none focus:ring-0 border-4 border-pink-500 shadow-inner bg-white transition-colors" maxlength="40">
+                    
+                    <!-- Autocomplete dropdown list -->
+                    <ul id="custom-autocomplete-list" class="absolute z-50 w-[96%] left-[2%] bg-white rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.2)] max-h-60 overflow-y-auto hidden text-left mt-1 border border-slate-200 divide-y divide-slate-100">
+                    </ul>
+
+                    <p id="name-error" class="hidden text-[#ffb07c] font-bold text-lg mt-4 drop-shadow-md tracking-wide">Please select a valid name from the list!</p>
                 </div>
 
                 <div class="flex flex-col items-center space-y-4">
@@ -270,8 +291,11 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // Bloquear click derecho en toda la página
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
         // 🚀 IMPORTANTE: PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
-        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwZWMunQR1khy3-Nb0bNuSOezu-5R1rGVg0-Mj47vRX8SNLpVy730O0IPELTmysFNv4/exec"; 
+        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwYTTEYTLvNckyQk116no-d18oAYDgCR4Nc2jRkWg4iixDM2bY2NPmW_0YEOuC1D9-2/exec"; 
 
         // --- GLOBAL VARIABLES ---
         let playerName = "";
@@ -291,6 +315,8 @@
         let leaderboardPollingInterval = null;
         let userIP = "unknown"; 
 
+        let allowedNames = [];
+
         // Obtener IP del usuario al cargar la página
         async function fetchUserIP() {
             try {
@@ -302,6 +328,78 @@
             }
         }
         fetchUserIP();
+
+        // Configuración de Autocompletado (Reemplazo del Datalist nativo)
+        const nameInput = document.getElementById('player-name');
+        const autocompleteList = document.getElementById('custom-autocomplete-list');
+
+        nameInput.addEventListener('input', function() {
+            const val = this.value;
+            autocompleteList.innerHTML = '';
+            
+            if (!val) {
+                autocompleteList.classList.add('hidden');
+                return;
+            }
+
+            let hasMatches = false;
+            allowedNames.forEach(name => {
+                if (name.toLowerCase().includes(val.toLowerCase())) {
+                    hasMatches = true;
+                    const li = document.createElement('li');
+                    li.className = 'cursor-pointer px-6 py-4 hover:bg-slate-50 text-[#1e293b] text-lg transition-colors font-semibold flex items-center';
+                    
+                    // Escapar caracteres especiales y envolver la coincidencia en color rosa
+                    const regex = new RegExp(`(${val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
+                    li.innerHTML = name.replace(regex, "<span class='text-pink-500 font-bold'>$1</span>");
+                    
+                    // Prevenir blur del input al hacer click
+                    li.addEventListener('mousedown', function(e) {
+                        e.preventDefault(); 
+                        nameInput.value = name;
+                        autocompleteList.innerHTML = '';
+                        autocompleteList.classList.add('hidden');
+                    });
+                    
+                    autocompleteList.appendChild(li);
+                }
+            });
+
+            if (hasMatches) {
+                autocompleteList.classList.remove('hidden');
+            } else {
+                autocompleteList.classList.add('hidden');
+            }
+        });
+
+        // Ocultar la lista al hacer click fuera
+        nameInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                autocompleteList.classList.add('hidden');
+            }, 150);
+        });
+
+        // Mostrar lista si hay texto al volver a enfocarse
+        nameInput.addEventListener('focus', function() {
+            if (this.value) {
+                this.dispatchEvent(new Event('input'));
+            }
+        });
+
+        // Obtener la lista de nombres válidos desde la hoja "List"
+        async function fetchAllowedNames() {
+            if (GOOGLE_SHEETS_URL.trim() === "") return;
+            try {
+                const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames");
+                const names = await res.json();
+                if (Array.isArray(names)) {
+                    allowedNames = names;
+                }
+            } catch (e) {
+                console.error("Error obteniendo la lista de nombres permitidos:", e);
+            }
+        }
+        fetchAllowedNames();
 
         // Check Setup
         if (GOOGLE_SHEETS_URL.trim() === "") {
@@ -651,12 +749,38 @@
         }
 
         window.startGame = function() {
-            playerName = document.getElementById('player-name').value.trim();
+            const nameInput = document.getElementById('player-name');
+            const errorEl = document.getElementById('name-error');
+            playerName = nameInput.value.trim();
+            
             if (!playerName) {
-                document.getElementById('name-error').classList.remove('hidden');
+                errorEl.innerText = "Please enter your name!";
+                errorEl.classList.remove('hidden');
                 return;
             }
-            document.getElementById('name-error').classList.add('hidden');
+
+            // Validar que el nombre exista en la lista (si la URL está configurada)
+            if (GOOGLE_SHEETS_URL.trim() !== "") {
+                if (allowedNames.length === 0) {
+                    errorEl.innerText = "Loading authorized names... Please wait.";
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                // Match exacto o sin distinguir mayúsculas/minúsculas
+                const validNameMatch = allowedNames.find(n => n.toLowerCase() === playerName.toLowerCase());
+                
+                if (!validNameMatch) {
+                    errorEl.innerText = "Please select a valid name from the list!";
+                    errorEl.classList.remove('hidden');
+                    return;
+                }
+                
+                // Usar el nombre tal y como está en el Google Sheets
+                playerName = validNameMatch;
+            }
+
+            errorEl.classList.add('hidden');
 
             if ('speechSynthesis' in window) {
                 const silent = new SpeechSynthesisUtterance('');
