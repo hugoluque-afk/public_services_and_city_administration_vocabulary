@@ -56,17 +56,18 @@
             user-select: none;
         }
 
-        /* Autocomplete scrollbar styling */
-        #custom-autocomplete-list::-webkit-scrollbar {
-            width: 8px;
-        }
+        /* Generic Scrollbar for Modal/Table */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
+
+        /* Autocomplete scrollbar styling (light background) */
         #custom-autocomplete-list::-webkit-scrollbar-track {
             background: #f8fafc;
-            border-radius: 8px;
         }
         #custom-autocomplete-list::-webkit-scrollbar-thumb {
             background: #cbd5e1;
-            border-radius: 8px;
         }
         #custom-autocomplete-list::-webkit-scrollbar-thumb:hover {
             background: #94a3b8;
@@ -260,28 +261,30 @@
     </div>
 
     <!-- LEADERBOARD SCREEN -->
-    <div id="leaderboard-screen" class="hidden min-h-screen w-full bg-slate-900 flex flex-col items-center justify-center p-6 text-white absolute inset-0 z-40 overflow-y-auto">
-        <div class="max-w-2xl w-full space-y-6 p-8 bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 animate-fade-in-up mt-10 mb-10">
-            <h1 class="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-500 drop-shadow-md text-center">Live Top 10 Leaderboard</h1>
+    <div id="leaderboard-screen" class="hidden h-screen w-full bg-slate-900 flex flex-col items-center justify-center p-4 md:p-6 text-white absolute inset-0 z-40 overflow-hidden">
+        <div class="max-w-2xl w-full flex flex-col p-6 md:p-8 bg-white/10 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 animate-fade-in-up h-full max-h-[85vh]">
+            <h1 class="text-3xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-amber-300 to-orange-500 drop-shadow-md text-center shrink-0">Live Global Leaderboard</h1>
             
-            <div class="bg-black/30 rounded-2xl overflow-hidden mt-6">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-white/10 text-gray-300 text-sm md:text-base uppercase tracking-wider">
-                            <th class="p-4 border-b border-white/10">Rank</th>
-                            <th class="p-4 border-b border-white/10">Name</th>
-                            <th class="p-4 border-b border-white/10 text-center">Score</th>
-                            <th class="p-4 border-b border-white/10 text-right">Time (s)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="leaderboard-list" class="text-base md:text-lg">
-                        <!-- Filled by JS -->
-                        <tr><td colspan="4" class="text-center p-4 text-gray-400">Loading live records...</td></tr>
-                    </tbody>
-                </table>
+            <div class="bg-black/30 rounded-2xl border border-white/10 mt-6 flex-1 overflow-hidden flex flex-col min-h-0">
+                <div class="overflow-y-auto flex-1 w-full relative">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="sticky top-0 bg-[#0f172a] z-10 shadow-md">
+                            <tr class="text-gray-300 text-sm md:text-base uppercase tracking-wider">
+                                <th class="p-4 border-b border-white/10">Rank</th>
+                                <th class="p-4 border-b border-white/10">Name</th>
+                                <th class="p-4 border-b border-white/10 text-center">Score</th>
+                                <th class="p-4 border-b border-white/10 text-right">Time (s)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leaderboard-list" class="text-base md:text-lg divide-y divide-white/5">
+                            <!-- Filled by JS -->
+                            <tr><td colspan="4" class="text-center p-4 text-gray-400">Loading live records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             
-            <div class="flex justify-center mt-8">
+            <div class="flex justify-center mt-6 shrink-0">
                 <button id="lb-back-btn" onclick="switchScreen('welcome-screen')" class="w-full md:w-1/2 py-4 bg-gray-600 hover:bg-gray-500 rounded-2xl font-bold text-xl shadow-lg transition-colors flex items-center justify-center space-x-2">
                     <span>Back</span>
                 </button>
@@ -1052,11 +1055,18 @@
             window.switchScreen('gameover-screen');
             speak("Game Over. You did your best!");
 
+            // Generar Firma de Seguridad (Anti-Trampas Básico)
+            // Esto convierte la cadena en Base64. Google Sheets rechazará el guardado
+            // si el hacker no incluye este token exacto.
+            const validName = playerName || "Unknown";
+            const secretSignature = btoa(score + "-" + validName + "-cityvocab2024");
+
             const newRecord = {
-                name: playerName || "Unknown",
+                name: validName,
                 score: Number(score),
                 timeAlive: Number(parseFloat(totalTimeAlive).toFixed(1)),
-                ip: userIP 
+                ip: userIP,
+                token: secretSignature 
             };
 
             // GRABADO A GOOGLE SHEETS
