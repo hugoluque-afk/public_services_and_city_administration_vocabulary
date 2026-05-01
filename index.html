@@ -320,20 +320,7 @@
         let leaderboardData = []; 
         let leaderboardPollingInterval = null;
         let userIP = "unknown"; 
-
         let allowedNames = [];
-
-        // Obtener IP
-        async function fetchUserIP() {
-            try {
-                const res = await fetch("https://api.ipify.org?format=json");
-                const data = await res.json();
-                userIP = data.ip;
-            } catch (e) {
-                console.warn("No se pudo obtener la IP", e);
-            }
-        }
-        fetchUserIP();
 
         // Configuración de Autocompletado
         const nameInput = document.getElementById('player-name');
@@ -378,27 +365,6 @@
 
         nameInput.addEventListener('blur', function() { setTimeout(() => { autocompleteList.classList.add('hidden'); }, 150); });
         nameInput.addEventListener('focus', function() { if (this.value) { this.dispatchEvent(new Event('input')); } });
-
-        async function fetchAllowedNames() {
-            if (GOOGLE_SHEETS_URL.trim() === "") return;
-            try {
-                const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames");
-                const names = await res.json();
-                if (Array.isArray(names)) { allowedNames = names; }
-            } catch (e) {
-                console.error("Error obtaining allowed names");
-            }
-        }
-        fetchAllowedNames();
-
-        if (GOOGLE_SHEETS_URL.trim() === "") {
-            document.getElementById('offline-badge').classList.remove('hidden');
-            document.getElementById('offline-text').innerText = "URL no configurada.";
-        }
-
-        if ('speechSynthesis' in window) {
-            window.speechSynthesis.getVoices();
-        }
 
         // --- ENCRYPTED VOCABULARY DATA ---
         const _0xV = ["TWF5b3I=","Q2l0aXplbg==","UmVzaWRlbnQ=","Q2l0eSBDb3VuY2lsb3I=","Q2l2aWwgU2VydmFudA==","Q29uc3RpdHVlbnQ=","Q2l0eSBNYW5hZ2Vy","VG93biBIYWxs","UHVibGljIExpYnJhcnk=","Q291cnRob3VzZQ==","Q29tbXVuaXR5IENlbnRlcg==","UHVibGljIFdvcmtz","UmVnaXN0cnkgT2ZmaWNl","U2FuaXRhdGlvbg==","UHVibGljIFRyYW5zcG9ydGF0aW9u","VXRpbGl0aWVz","UHVibGljIFNhZmV0eQ==","VXJiYW4gUGxhbm5pbmc=","UGFya3MgYW5kIFJlY3JlYXRpb24=","TXVuaWNpcGFsaXR5","T3JkaW5hbmNl","Q2l2aWMgRHV0eQ==","SW5mcmFzdHJ1Y3R1cmU=","VGF4YXRpb24=","QnVkZ2V0","QnlsYXc="];
@@ -497,7 +463,6 @@
             const answer = qObj.a;
             const hint = HINTS[answer] || "Think about public services and administration!";
 
-            // Generate 3 random distractors from VOCAB_WORDS
             let availableWords = VOCAB_WORDS.filter(w => w !== answer);
             availableWords = shuffleArray(availableWords);
             const distractors = availableWords.slice(0, 3);
@@ -517,7 +482,6 @@
                 return;
             }
 
-            // Validar que el nombre exista en la lista (si la URL está configurada)
             if (GOOGLE_SHEETS_URL.trim() !== "") {
                 if (allowedNames.length === 0) {
                     errorEl.innerText = "Loading authorized names... Please wait.";
@@ -525,7 +489,6 @@
                     return;
                 }
                 
-                // Match exacto o sin distinguir mayúsculas/minúsculas
                 const validNameMatch = allowedNames.find(n => n.toLowerCase() === playerName.toLowerCase());
                 
                 if (!validNameMatch) {
@@ -534,7 +497,6 @@
                     return;
                 }
                 
-                // Usar el nombre tal y como está en el Google Sheets
                 playerName = validNameMatch;
             }
 
@@ -847,7 +809,11 @@
             }
 
             try {
-                const response = await fetch(GOOGLE_SHEETS_URL);
+                // 🚀 SISTEMA ANTI-CACHÉ: Evita que el navegador lea datos viejos
+                const timestamp = new Date().getTime();
+                const fetchUrl = GOOGLE_SHEETS_URL + "?t=" + timestamp;
+
+                const response = await fetch(fetchUrl);
                 const data = await response.json();
                 
                 console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
@@ -935,8 +901,15 @@
             window.switchScreen('leaderboard-screen');
         }
 
-        renderHearts();
-        startLeaderboardPolling();
+        // 🚀 INICIALIZACIÓN SECUENCIAL ORDENADA
+        async function initializeApp() {
+            renderHearts();
+            await fetchUserIP();
+            await fetchAllowedNames();
+            startLeaderboardPolling();
+        }
+
+        initializeApp();
     </script>
 </body>
 </html>
