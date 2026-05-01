@@ -415,13 +415,13 @@
 
         // --- CORE FUNCTIONS ---
         
-        // 🚀 NUEVA FUNCIÓN: Filtrar solo el mejor récord por Alumno (Nombre) e IP
+        // 🚀 NUEVA FUNCIÓN: Filtrar solo el mejor récord por Alumno (Nombre)
         function getUniqueBestScores(dataArray) {
             const best = {};
             dataArray.forEach(record => {
-                // Generamos una clave única combinando el Nombre y la IP. 
-                // Usamos toUpperCase() para evitar que "Juan" y "JUAN" se cuenten como dos distintos.
-                const key = (record.name || "").trim().toUpperCase() + "_" + (record.ip || "unknown");
+                // Agrupamos EXCLUSIVAMENTE por el nombre del alumno.
+                // Esto garantiza que NADIE aparezca repetido en la tabla, mostrando solo su mejor intento histórico.
+                const key = (record.name || "").trim().toUpperCase();
                 
                 if (!best[key]) {
                     best[key] = record;
