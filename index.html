@@ -322,6 +322,17 @@
         let userIP = "unknown"; 
         let allowedNames = [];
 
+        // Obtener IP
+        async function fetchUserIP() {
+            try {
+                const res = await fetch("https://api.ipify.org?format=json");
+                const data = await res.json();
+                userIP = data.ip;
+            } catch (e) {
+                console.warn("No se pudo obtener la IP", e);
+            }
+        }
+
         // Configuración de Autocompletado
         const nameInput = document.getElementById('player-name');
         const autocompleteList = document.getElementById('custom-autocomplete-list');
@@ -365,6 +376,26 @@
 
         nameInput.addEventListener('blur', function() { setTimeout(() => { autocompleteList.classList.add('hidden'); }, 150); });
         nameInput.addEventListener('focus', function() { if (this.value) { this.dispatchEvent(new Event('input')); } });
+
+        async function fetchAllowedNames() {
+            if (GOOGLE_SHEETS_URL.trim() === "") return;
+            try {
+                const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames");
+                const names = await res.json();
+                if (Array.isArray(names)) { allowedNames = names; }
+            } catch (e) {
+                console.error("Error obtaining allowed names");
+            }
+        }
+
+        if (GOOGLE_SHEETS_URL.trim() === "") {
+            document.getElementById('offline-badge').classList.remove('hidden');
+            document.getElementById('offline-text').innerText = "URL no configurada.";
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.getVoices();
+        }
 
         // --- ENCRYPTED VOCABULARY DATA ---
         const _0xV = ["TWF5b3I=","Q2l0aXplbg==","UmVzaWRlbnQ=","Q2l0eSBDb3VuY2lsb3I=","Q2l2aWwgU2VydmFudA==","Q29uc3RpdHVlbnQ=","Q2l0eSBNYW5hZ2Vy","VG93biBIYWxs","UHVibGljIExpYnJhcnk=","Q291cnRob3VzZQ==","Q29tbXVuaXR5IENlbnRlcg==","UHVibGljIFdvcmtz","UmVnaXN0cnkgT2ZmaWNl","U2FuaXRhdGlvbg==","UHVibGljIFRyYW5zcG9ydGF0aW9u","VXRpbGl0aWVz","UHVibGljIFNhZmV0eQ==","VXJiYW4gUGxhbm5pbmc=","UGFya3MgYW5kIFJlY3JlYXRpb24=","TXVuaWNpcGFsaXR5","T3JkaW5hbmNl","Q2l2aWMgRHV0eQ==","SW5mcmFzdHJ1Y3R1cmU=","VGF4YXRpb24=","QnVkZ2V0","QnlsYXc="];
@@ -809,19 +840,14 @@
             }
 
             try {
-                // 🚀 SISTEMA ANTI-CACHÉ: Evita que el navegador lea datos viejos
                 const timestamp = new Date().getTime();
                 const fetchUrl = GOOGLE_SHEETS_URL + "?t=" + timestamp;
 
                 const response = await fetch(fetchUrl);
                 const data = await response.json();
                 
-                console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
-                
                 leaderboardData = getUniqueBestScores(data);
                 
-                console.log(`🥇 Alumnos únicos tras el filtro: ${leaderboardData.length}`);
-
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
             } catch (e) {
@@ -901,12 +927,12 @@
             window.switchScreen('leaderboard-screen');
         }
 
-        // 🚀 INICIALIZACIÓN SECUENCIAL ORDENADA
-        async function initializeApp() {
+        // 🚀 INICIALIZACIÓN PARALELA PARA QUE NO SE CUELGUE
+        function initializeApp() {
             renderHearts();
-            await fetchUserIP();
-            await fetchAllowedNames();
-            startLeaderboardPolling();
+            fetchUserIP(); // Sin await: se ejecuta en el fondo
+            fetchAllowedNames(); // Sin await: se ejecuta en el fondo
+            startLeaderboardPolling(); // Arranca inmediatamente
         }
 
         initializeApp();
