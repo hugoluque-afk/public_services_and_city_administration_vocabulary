@@ -415,13 +415,18 @@
 
         // --- CORE FUNCTIONS ---
         
-        // 🚀 NUEVA FUNCIÓN: Filtrar solo el mejor récord por Alumno (Nombre)
+        // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por Alumno e IP, asegurando mostrar los ceros
         function getUniqueBestScores(dataArray) {
             const best = {};
             dataArray.forEach(record => {
-                // Agrupamos EXCLUSIVAMENTE por el nombre del alumno.
-                // Esto garantiza que NADIE aparezca repetido en la tabla, mostrando solo su mejor intento histórico.
-                const key = (record.name || "").trim().toUpperCase();
+                const name = (record.name || "").trim();
+                // Ignorar filas en blanco que Google Sheets a veces envía por error
+                if (!name) return; 
+
+                // Agrupamos por Nombre E IP. Así, si 2 alumnos se llaman "Juan" 
+                // pero tienen IP diferente, ambos saldrán. Si es el mismo IP y Nombre, 
+                // solo se queda el puntaje más alto.
+                const key = name.toUpperCase() + "_" + (record.ip || "unknown");
                 
                 if (!best[key]) {
                     best[key] = record;
