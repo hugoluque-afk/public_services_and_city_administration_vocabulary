@@ -861,9 +861,13 @@
                 const response = await fetch(GOOGLE_SHEETS_URL);
                 const data = await response.json();
                 
+                console.log(`📡 Recibidos de Sheets: ${data.length} intentos en total.`);
+                
                 // Procesar los datos para dejar solo EL MEJOR INTENTO de cada alumno
                 leaderboardData = getUniqueBestScores(data);
                 
+                console.log(`🥇 Alumnos únicos tras filtrar repetidos: ${leaderboardData.length}`);
+
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
             } catch (e) {
