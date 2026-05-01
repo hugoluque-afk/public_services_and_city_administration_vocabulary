@@ -297,8 +297,11 @@
         // Bloquear click derecho en toda la página
         document.addEventListener('contextmenu', event => event.preventDefault());
 
-        // 🚀 IMPORTANTE: PEGA AQUÍ LA URL DE TU APLICACIÓN WEB DE GOOGLE APPS SCRIPT
-        const GOOGLE_SHEETS_URL = "https://script.google.com/macros/s/AKfycbwYTTEYTLvNckyQk116no-d18oAYDgCR4Nc2jRkWg4iixDM2bY2NPmW_0YEOuC1D9-2/exec"; 
+        // 🚀 OBFUSCATION LAYER: URL & DATA DECODING
+        const _d = (s) => atob(s);
+        
+        // URL ENCRIPTADA
+        const GOOGLE_SHEETS_URL = _d("aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J3WVRURVlUTHZOY2t5UWsxMTZuby1kMThvQVlEZ0NSNE5jMmpSa1dnNGlpeERNMmJZMk5QbVdfMFlFT3VDMUQ5LTIvZXhlYw==");
 
         // --- GLOBAL VARIABLES ---
         let playerName = "";
@@ -320,7 +323,7 @@
 
         let allowedNames = [];
 
-        // Obtener IP del usuario al cargar la página
+        // Obtener IP
         async function fetchUserIP() {
             try {
                 const res = await fetch("https://api.ipify.org?format=json");
@@ -332,7 +335,7 @@
         }
         fetchUserIP();
 
-        // Configuración de Autocompletado (Reemplazo del Datalist nativo)
+        // Configuración de Autocompletado
         const nameInput = document.getElementById('player-name');
         const autocompleteList = document.getElementById('custom-autocomplete-list');
 
@@ -352,11 +355,9 @@
                     const li = document.createElement('li');
                     li.className = 'cursor-pointer px-6 py-4 hover:bg-slate-50 text-[#1e293b] text-lg transition-colors font-semibold flex items-center';
                     
-                    // Escapar caracteres especiales y envolver la coincidencia en color rosa
                     const regex = new RegExp(`(${val.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, "gi");
                     li.innerHTML = name.replace(regex, "<span class='text-pink-500 font-bold'>$1</span>");
                     
-                    // Prevenir blur del input al hacer click
                     li.addEventListener('mousedown', function(e) {
                         e.preventDefault(); 
                         nameInput.value = name;
@@ -375,319 +376,39 @@
             }
         });
 
-        // Ocultar la lista al hacer click fuera
-        nameInput.addEventListener('blur', function() {
-            setTimeout(() => {
-                autocompleteList.classList.add('hidden');
-            }, 150);
-        });
+        nameInput.addEventListener('blur', function() { setTimeout(() => { autocompleteList.classList.add('hidden'); }, 150); });
+        nameInput.addEventListener('focus', function() { if (this.value) { this.dispatchEvent(new Event('input')); } });
 
-        // Mostrar lista si hay texto al volver a enfocarse
-        nameInput.addEventListener('focus', function() {
-            if (this.value) {
-                this.dispatchEvent(new Event('input'));
-            }
-        });
-
-        // Obtener la lista de nombres válidos desde la hoja "List"
         async function fetchAllowedNames() {
             if (GOOGLE_SHEETS_URL.trim() === "") return;
             try {
                 const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames");
                 const names = await res.json();
-                if (Array.isArray(names)) {
-                    allowedNames = names;
-                }
+                if (Array.isArray(names)) { allowedNames = names; }
             } catch (e) {
-                console.error("Error obteniendo la lista de nombres permitidos:", e);
+                console.error("Error obtaining allowed names");
             }
         }
         fetchAllowedNames();
 
-        // Check Setup
         if (GOOGLE_SHEETS_URL.trim() === "") {
             document.getElementById('offline-badge').classList.remove('hidden');
-            document.getElementById('offline-text').innerText = "URL de Google Sheets no configurada. Récords locales.";
+            document.getElementById('offline-text').innerText = "URL no configurada.";
         }
 
-        // Load voices early
         if ('speechSynthesis' in window) {
             window.speechSynthesis.getVoices();
         }
 
-        // --- NEW VOCABULARY DATA (200+ Variations from PDF) ---
-        const VOCAB_WORDS = [
-            "Mayor", "Citizen", "Resident", "City Councilor", "Civil Servant", "Constituent", "City Manager", 
-            "Town Hall", "Public Library", "Courthouse", "Community Center", "Public Works", "Registry Office", 
-            "Sanitation", "Public Transportation", "Utilities", "Public Safety", "Urban Planning", "Parks and Recreation", 
-            "Municipality", "Ordinance", "Civic Duty", "Infrastructure", "Taxation", "Budget", "Bylaw"
-        ];
+        // --- ENCRYPTED VOCABULARY DATA ---
+        const _0xV = ["TWF5b3I=","Q2l0aXplbg==","UmVzaWRlbnQ=","Q2l0eSBDb3VuY2lsb3I=","Q2l2aWwgU2VydmFudA==","Q29uc3RpdHVlbnQ=","Q2l0eSBNYW5hZ2Vy","VG93biBIYWxs","UHVibGljIExpYnJhcnk=","Q291cnRob3VzZQ==","Q29tbXVuaXR5IENlbnRlcg==","UHVibGljIFdvcmtz","UmVnaXN0cnkgT2ZmaWNl","U2FuaXRhdGlvbg==","UHVibGljIFRyYW5zcG9ydGF0aW9u","VXRpbGl0aWVz","UHVibGljIFNhZmV0eQ==","VXJiYW4gUGxhbm5pbmc=","UGFya3MgYW5kIFJlY3JlYXRpb24=","TXVuaWNpcGFsaXR5","T3JkaW5hbmNl","Q2l2aWMgRHV0eQ==","SW5mcmFzdHJ1Y3R1cmU=","VGF4YXRpb24=","QnVkZ2V0","QnlsYXc="];
+        const VOCAB_WORDS = _0xV.map(x => _d(x));
 
-        const HINTS = {
-            "Mayor": "The elected head of a city or town.",
-            "Citizen": "A legally recognized subject with rights and responsibilities.",
-            "Resident": "Someone who lives permanently in a certain place.",
-            "City Councilor": "An elected member making local laws (also Alderman).",
-            "Civil Servant": "A public sector employee working for the government.",
-            "Constituent": "A voting member represented by an elected official.",
-            "City Manager": "An appointed official directing daily city administration.",
-            "Town Hall": "Headquarters of city administration.",
-            "Public Library": "A building to borrow books and access computers.",
-            "Courthouse": "Where courts of law are held.",
-            "Community Center": "A public location for group activities and support.",
-            "Public Works": "Maintains city infrastructure like roads and bridges.",
-            "Registry Office": "Where official records like births and marriages are kept.",
-            "Sanitation": "Responsible for garbage collection and street cleaning.",
-            "Public Transportation": "Government-funded transit systems like buses.",
-            "Utilities": "Essential services like water, electricity, and gas.",
-            "Public Safety": "Police, Fire Department, and EMS.",
-            "Urban Planning": "Decides how land is used for organized growth.",
-            "Parks and Recreation": "Maintains public playgrounds and recreational programs.",
-            "Municipality": "A city or town that has corporate status and local government.",
-            "Ordinance": "A local law enacted by a city council.",
-            "Civic Duty": "Responsibilities of a citizen, like voting.",
-            "Infrastructure": "Basic physical systems of a city (roads, bridges).",
-            "Taxation": "Money collected to fund public services.",
-            "Budget": "The city's financial plan for spending.",
-            "Bylaw": "A rule established by a community to regulate itself."
-        };
+        const _0xH = {"TWF5b3I=":"VGhlIGVsZWN0ZWQgaGVhZCBvZiBhIGNpdHkgb3IgdG93bi4=","Q2l0aXplbg==":"QSBsZWdhbGx5IHJlY29nbml6ZWQgc3ViamVjdCB3aXRoIHJpZ2h0cyBhbmQgcmVzcG9uc2liaWxpdGllcy4=","UmVzaWRlbnQ=":"U29tZW9uZSB3aG8gbGl2ZXMgcGVybWFuZW50bHkgaW4gYSBjZXJ0YWluIHBsYWNlLg==","Q2l0eSBDb3VuY2lsb3I=":"QW4gZWxlY3RlZCBtZW1iZXIgbWFraW5nIGxvY2FsIGxhd3MgKGFsc28gQWxkZXJtYW4pLg==","Q2l2aWwgU2VydmFudA==":"QSBwdWJsaWMgc2VjdG9yIGVtcGxveWVlIHdvcmtpbmcgZm9yIHRoZSBnb3Zlcm5tZW50Lg==","Q29uc3RpdHVlbnQ=":"QSB2b3RpbmcgbWVtYmVyIHJlcHJlc2VudGVkIGJ5IGFuIGVsZWN0ZWQgb2ZmaWNpYWwu","Q2l0eSBNYW5hZ2Vy":"QW4gYXBwb2ludGVkIG9mZmljaWFsIGRpcmVjdGluZyBkYWlseSBjaXR5IGFkbWluaXN0cmF0aW9uLg==","VG93biBIYWxs":"SGVhZHF1YXJ0ZXJzIG9mIGNpdHkgYWRtaW5pc3RyYXRpb24u","UHVibGljIExpYnJhcnk=":"QSBidWlsZGluZyB0byBib3Jyb3cgYm9va3MgYW5kIGFjY2VzcyBjb21wdXRlcnMu","Q291cnRob3VzZQ==":"V2hlcmUgY291cnRzIG9mIGxhdyBhcmUgaGVsZC4=","Q29tbXVuaXR5IENlbnRlcg==":"QSBwdWJsaWMgbG9jYXRpb24gZm9yIGdyb3VwIGFjdGl2aXRpZXMgYW5kIHN1cHBvcnQu","UHVibGljIFdvcmtz":"TWFpbnRhaW5zIGNpdHkgaW5mcmFzdHJ1Y3R1cmUgbGlrZSByb2FkcyBhbmQgYnJpZGdlcy4=","UmVnaXN0cnkgT2ZmaWNl":"V2hlcmUgb2ZmaWNpYWwgcmVjb3JkcyBsaWtlIGJpcnRocyBhbmQgbWFycmlhZ2VzIGFyZSBrZXB0Lg==","U2FuaXRhdGlvbg==":"UmVzcG9uc2libGUgZm9yIGdhcmJhZ2UgY29sbGVjdGlvbiBhbmQgc3RyZWV0IGNsZWFuaW5nLg==","UHVibGljIFRyYW5zcG9ydGF0aW9u":"R292ZXJubWVudC1mdW5kZWQgdHJhbnNpdCBzeXN0ZW1zIGxpa2UgYnVzZXMu","VXRpbGl0aWVz":"RXNzZW50aWFsIHNlcnZpY2VzIGxpa2Ugd2F0ZXIsIGVsZWN0cmljaXR5LCBhbmQgZ2FzLg==","UHVibGljIFNhZmV0eQ==":"UG9saWNlLCBGaXJlIERlcGFydG1lbnQsIGFuZCBFTVMu","VXJiYW4gUGxhbm5pbmc=":"RGVjaWRlcyBob3cgbGFuZCBpcyB1c2VkIGZvciBvcmdhbml6ZWQgZ3Jvd3RoLg==","UGFya3MgYW5kIFJlY3JlYXRpb24=":"TWFpbnRhaW5zIHB1YmxpYyBwbGF5Z3JvdW5kcyBhbmQgcmVjcmVhdGlvbmFsIHByb2dyYW1zLg==","TXVuaWNpcGFsaXR5":"QSBjaXR5IG9yIHRvd24gdGhhdCBoYXMgY29ycG9yYXRlIHN0YXR1cyBhbmQgbG9jYWwgZ292ZXJubWVudC4=","T3JkaW5hbmNl":"QSBsb2NhbCBsYXcgZW5hY3RlZCBieSBhIGNpdHkgY291bmNpbC4=","Q2l2aWMgRHV0eQ==":"UmVzcG9uc2libGUgb2YgYSBjaXRpemVuLCBsaWtlIHZvdGluZy4=","SW5mcmFzdHJ1Y3R1cmU=":"QmFzaWMgcGh5c2ljYWwgc3lzdGVtcyBvZiBhIGNpdHkgKHJvYWRzLCBicmlkZ2VzKS4=","VGF4YXRpb24=":"TW9uZXkgY29sbGVjdGVkIHRvIGZ1bmQgcHVibGljIHNlcnZpY2VzLg==","QnVkZ2V0":"VGhlIGNpdHkncyBmaW5hbmNpYWwgcGxhbiBmb3Igc3BlbmRpbmcu","QnlsYXc=":"QSBydWxlIGVzdGFibGlzaGVkIGJ5IGEgY29tbXVuaXR5IHRvIHJlZ3VsYXRlIGl0c2VsZi4="};
+        const HINTS = {}; for(let k in _0xH) HINTS[_d(k)] = _d(_0xH[k]);
 
-        const QUESTION_BANK = [
-            // Mayor
-            { q: "The elected head of a city, town, or other municipality is the ___.", a: "Mayor" },
-            { q: "Who is the top elected executive in local government?", a: "Mayor" },
-            { q: "The ___'s office is usually located inside the Town Hall.", a: "Mayor" },
-            { q: "If you run for the highest elected office in a town, you want to be the ___.", a: "Mayor" },
-            { q: "Who represents the city and leads the local government?", a: "Mayor" },
-            { q: "The ___ gave a speech at the opening of the new community center.", a: "Mayor" },
-            { q: "Which official is ELECTED by the public to lead the city's administration?", a: "Mayor" },
-            { q: "The voters chose a new ___ to run their municipality.", a: "Mayor" },
-            // Citizen
-            { q: "A legally recognized subject with rights and responsibilities is a ___.", a: "Citizen" },
-            { q: "Voting and paying taxes are responsibilities of a good ___.", a: "Citizen" },
-            { q: "A native or naturalized national of a state is called a ___.", a: "Citizen" },
-            { q: "A ___ has the civic duty to serve on a jury if called upon.", a: "Citizen" },
-            { q: "The new noise ordinance was debated by a group of concerned ___s.", a: "Citizen" },
-            { q: "Who is a legally recognized member of a state or commonwealth?", a: "Citizen" },
-            { q: "As a ___, you have the right to vote in local elections.", a: "Citizen" },
-            { q: "The safety of every ___ is the priority of the Public Safety department.", a: "Citizen" },
-            // Resident
-            { q: "A person who lives somewhere permanently is a ___.", a: "Resident" },
-            { q: "If you live in an apartment in the city, you are a ___ of that city.", a: "Resident" },
-            { q: "The City Manager handles many questions from local ___s.", a: "Resident" },
-            { q: "A ___ is someone who occupies a home on a long-term basis.", a: "Resident" },
-            { q: "Parking permits are only given to a ___ of that specific street.", a: "Resident" },
-            { q: "You don't have to be a citizen to be a ___, you just have to live there.", a: "Resident" },
-            { q: "The new park is open to any ___ of the neighborhood.", a: "Resident" },
-            { q: "Long-term occupants of a town are its ___s.", a: "Resident" },
-            // City Councilor
-            { q: "An elected member who helps make local laws is a ___.", a: "City Councilor" },
-            { q: "Also known as an Alderman, this person votes on city decisions.", a: "City Councilor" },
-            { q: "A ___ represents a specific district within the municipality.", a: "City Councilor" },
-            { q: "Who drafts and passes the local ordinances?", a: "City Councilor" },
-            { q: "The ___ debated the new city budget at the Town Hall.", a: "City Councilor" },
-            { q: "An elected official who serves on the city's legislative body is a ___.", a: "City Councilor" },
-            { q: "If you want to change a bylaw, you should talk to your local ___.", a: "City Councilor" },
-            { q: "The Mayor and the ___s voted to approve the new infrastructure project.", a: "City Councilor" },
-            // Civil Servant
-            { q: "A person employed in the public sector by a government department is a ___.", a: "Civil Servant" },
-            { q: "Maria works at the Town Hall as a dedicated ___.", a: "Civil Servant" },
-            { q: "A public employee who is not elected but hired is typically a ___.", a: "Civil Servant" },
-            { q: "Which term describes workers like postal workers and public administrators?", a: "Civil Servant" },
-            { q: "A ___ serves the public through government agencies.", a: "Civil Servant" },
-            { q: "Working for the municipality as a permanent employee makes you a ___.", a: "Civil Servant" },
-            { q: "An appointed government worker is also known as a ___.", a: "Civil Servant" },
-            { q: "The ___ processed the paperwork at the Registry Office.", a: "Civil Servant" },
-            // Constituent
-            { q: "A voting member of a community represented by an elected official is a ___.", a: "Constituent" },
-            { q: "Politicians often hold town meetings to listen to their ___s.", a: "Constituent" },
-            { q: "If you live in the Mayor's district, you are their ___.", a: "Constituent" },
-            { q: "Elected officials must answer to their ___s.", a: "Constituent" },
-            { q: "A ___ is any person living in an area represented by a specific politician.", a: "Constituent" },
-            { q: "The City Councilor sent a newsletter to every ___ in her district.", a: "Constituent" },
-            { q: "Representing the needs of every ___ is a politician's main job.", a: "Constituent" },
-            { q: "When a citizen votes for a representative, they act as a ___.", a: "Constituent" },
-            // City Manager
-            { q: "An appointed official who directs the daily administration of a city is the ___.", a: "City Manager" },
-            { q: "Unlike the Mayor, the ___ is usually hired, not elected.", a: "City Manager" },
-            { q: "Who handles the day-to-day operations of the municipality?", a: "City Manager" },
-            { q: "The ___ oversees all city departments and their budgets.", a: "City Manager" },
-            { q: "Maria works as an assistant to the ___, handling citizen complaints.", a: "City Manager" },
-            { q: "The city council appointed a new ___ to improve public services.", a: "City Manager" },
-            { q: "Which official is essentially the CEO of the local government?", a: "City Manager" },
-            { q: "The ___ ensures that the Mayor's policies are executed properly.", a: "City Manager" },
-            // Town Hall
-            { q: "The headquarters of city administration is the ___.", a: "Town Hall" },
-            { q: "Where are the city council chambers usually located?", a: "Town Hall" },
-            { q: "The Mayor's office is typically found in the ___.", a: "Town Hall" },
-            { q: "Maria is a dedicated civil servant working at the local ___.", a: "Town Hall" },
-            { q: "The city council met at the ___ to discuss the new budget.", a: "Town Hall" },
-            { q: "Where do local government officials have their main administrative offices?", a: "Town Hall" },
-            { q: "Citizens gathered in front of the ___ to protest the new ordinance.", a: "Town Hall" },
-            { q: "The central administrative building of a municipal government is the ___.", a: "Town Hall" },
-            // Public Library
-            { q: "A building where you can borrow books and access computers is the ___.", a: "Public Library" },
-            { q: "Which facility is funded by local taxes to provide educational resources?", a: "Public Library" },
-            { q: "The Public Works department repaved the parking lot at the ___.", a: "Public Library" },
-            { q: "Where can a resident go to read or study for free?", a: "Public Library" },
-            { q: "The ___ offers free internet access and community classes.", a: "Public Library" },
-            { q: "If you need to check out a novel, you visit the ___.", a: "Public Library" },
-            { q: "A quiet public building dedicated to reading and learning is a ___.", a: "Public Library" },
-            { q: "The city's ___ is adding a new wing for children's books.", a: "Public Library" },
-            // Courthouse
-            { q: "A building where legal disputes are resolved is a ___.", a: "Courthouse" },
-            { q: "Where are courts of law held?", a: "Courthouse" },
-            { q: "If you are called for jury duty, you must go to the ___.", a: "Courthouse" },
-            { q: "The judge and lawyers work at the local ___.", a: "Courthouse" },
-            { q: "Where are criminal and civil trials conducted?", a: "Courthouse" },
-            { q: "Legal disputes over local bylaws are often settled at the ___.", a: "Courthouse" },
-            { q: "The ___ is heavily guarded by the Public Safety department.", a: "Courthouse" },
-            { q: "Citizens serving their civic duty on a jury report to the ___.", a: "Courthouse" },
-            // Community Center
-            { q: "A public location where members gather for group activities is a ___.", a: "Community Center" },
-            { q: "Where can citizens find social support and public information locally?", a: "Community Center" },
-            { q: "The new ___ hosts after-school programs and senior citizen yoga.", a: "Community Center" },
-            { q: "A neighborhood hub for social and recreational activities is the ___.", a: "Community Center" },
-            { q: "The Mayor gave a speech at the opening of the new ___.", a: "Community Center" },
-            { q: "Where might a town hold an indoor neighborhood gathering?", a: "Community Center" },
-            { q: "The ___ offers free workshops and local events.", a: "Community Center" },
-            { q: "A local facility built to promote social cohesion is a ___.", a: "Community Center" },
-            // Public Works
-            { q: "The department responsible for building and maintaining city infrastructure is ___.", a: "Public Works" },
-            { q: "Who fixes potholes and maintains the main bridges?", a: "Public Works" },
-            { q: "If a street needs to be repaved, you call the ___ department.", a: "Public Works" },
-            { q: "The ___ department manages the city's water supply and roads.", a: "Public Works" },
-            { q: "Which department repaved the parking lot at the Public Library?", a: "Public Works" },
-            { q: "Repairing the city's power grids is coordinated by ___.", a: "Public Works" },
-            { q: "The budget was increased to help ___ fix the old highways.", a: "Public Works" },
-            { q: "Heavy machinery used to repair roads belongs to the ___ department.", a: "Public Works" },
-            // Registry Office
-            { q: "A government office where official records are kept is the ___.", a: "Registry Office" },
-            { q: "Where do you get copies of birth, marriage, and death certificates?", a: "Registry Office" },
-            { q: "To legally record your new marriage, you visit the ___.", a: "Registry Office" },
-            { q: "The ___ maintains the vital statistics of the municipality's residents.", a: "Registry Office" },
-            { q: "If you lose your birth certificate, you apply for a new one at the ___.", a: "Registry Office" },
-            { q: "Official public records of the citizens are stored at the ___.", a: "Registry Office" },
-            { q: "The civil servant at the ___ processed my paperwork.", a: "Registry Office" },
-            { q: "You must go to the ___ to officially register a newborn baby.", a: "Registry Office" },
-            // Sanitation
-            { q: "The department responsible for garbage collection is ___.", a: "Sanitation" },
-            { q: "Who handles recycling and street cleaning?", a: "Sanitation" },
-            { q: "Every Tuesday, the trucks from the ___ department pick up our trash.", a: "Sanitation" },
-            { q: "Waste Management is another term for the ___ department.", a: "Sanitation" },
-            { q: "To report a missed trash pickup, you contact ___.", a: "Sanitation" },
-            { q: "The ___ department ensures the city streets remain clean and hygienic.", a: "Sanitation" },
-            { q: "Recycling programs are managed by the ___ division.", a: "Sanitation" },
-            { q: "Proper ___ is essential to prevent disease in a dense municipality.", a: "Sanitation" },
-            // Public Transportation
-            { q: "Government-funded transit systems like buses and subways are ___.", a: "Public Transportation" },
-            { q: "Maria took ___ back home after work.", a: "Public Transportation" },
-            { q: "Trains, trams, and city buses are part of ___.", a: "Public Transportation" },
-            { q: "To reduce traffic, the city invests in better ___.", a: "Public Transportation" },
-            { q: "A network of transit vehicles available for public use is ___.", a: "Public Transportation" },
-            { q: "Commuters rely on ___ to get to work without a car.", a: "Public Transportation" },
-            { q: "The city budget allocated funds for new subway trains for ___.", a: "Public Transportation" },
-            { q: "Expanding the bus routes improves the city's ___.", a: "Public Transportation" },
-            // Utilities
-            { q: "Essential services like water, electricity, and gas are ___.", a: "Utilities" },
-            { q: "Sewage treatment is considered one of the public ___.", a: "Utilities" },
-            { q: "The ___ we use daily in our homes are often regulated by the city.", a: "Utilities" },
-            { q: "If your water is shut off, you must call the ___ department.", a: "Utilities" },
-            { q: "Power grids and water supply networks provide ___.", a: "Utilities" },
-            { q: "Residents pay monthly bills for their ___.", a: "Utilities" },
-            { q: "Essential public provisions for a home are called ___.", a: "Utilities" },
-            { q: "The storm damaged the power lines, cutting off ___ to the neighborhood.", a: "Utilities" },
-            // Public Safety
-            { q: "The Police and Fire Departments are part of ___.", a: "Public Safety" },
-            { q: "Departments dedicated to the safety of citizens make up ___.", a: "Public Safety" },
-            { q: "Emergency Medical Services (EMS) belongs to the ___ sector.", a: "Public Safety" },
-            { q: "Which department protects the community from crime and fires?", a: "Public Safety" },
-            { q: "A large portion of the budget goes to ___ to hire more officers.", a: "Public Safety" },
-            { q: "The ___ department responds to 911 emergency calls.", a: "Public Safety" },
-            { q: "Ensuring the physical security of residents is the goal of ___.", a: "Public Safety" },
-            { q: "The ___ chief gave a report on the declining crime rate.", a: "Public Safety" },
-            // Urban Planning
-            { q: "The department that decides how land is used is ___.", a: "Urban Planning" },
-            { q: "Who handles zoning for residential, commercial, or industrial areas?", a: "Urban Planning" },
-            { q: "The ___ department ensures organized growth of the city.", a: "Urban Planning" },
-            { q: "Before building a new factory, you need approval from ___.", a: "Urban Planning" },
-            { q: "To change a residential area into a commercial one, you go through ___.", a: "Urban Planning" },
-            { q: "The layout of new neighborhoods is designed by ___.", a: "Urban Planning" },
-            { q: "Zoning laws are enforced by the ___ division.", a: "Urban Planning" },
-            { q: "To prevent factories near schools, the city uses ___.", a: "Urban Planning" },
-            // Parks and Recreation
-            { q: "The department that maintains public playgrounds is ___.", a: "Parks and Recreation" },
-            { q: "Who organizes recreational programs and summer camps?", a: "Parks and Recreation" },
-            { q: "Maintaining the city's green spaces is the job of ___.", a: "Parks and Recreation" },
-            { q: "If a tree falls in a public park, ___ clears it.", a: "Parks and Recreation" },
-            { q: "The ___ department built a new swimming pool for the residents.", a: "Parks and Recreation" },
-            { q: "City sports leagues are organized by ___.", a: "Parks and Recreation" },
-            { q: "The ___ budget covers the upkeep of all hiking trails.", a: "Parks and Recreation" },
-            { q: "Which department focuses on the leisure activities of citizens?", a: "Parks and Recreation" },
-            // Municipality
-            { q: "A city or town that has corporate status and local government is a ___.", a: "Municipality" },
-            { q: "The Mayor is the elected head of a ___.", a: "Municipality" },
-            { q: "Maria was proud of the work she did for her ___.", a: "Municipality" },
-            { q: "An incorporated local area with self-government is a ___.", a: "Municipality" },
-            { q: "The ___ is responsible for providing local services.", a: "Municipality" },
-            { q: "Every citizen within the ___ must follow its bylaws.", a: "Municipality" },
-            { q: "The boundaries of the ___ determine who pays local taxes.", a: "Municipality" },
-            { q: "Another word for an incorporated town or city is ___.", a: "Municipality" },
-            // Ordinance
-            { q: "A local law enacted by a city council is an ___.", a: "Ordinance" },
-            { q: "The new noise ___ bans loud music after 9:00 PM.", a: "Ordinance" },
-            { q: "A municipal regulation, such as a parking rule, is an ___.", a: "Ordinance" },
-            { q: "The city council passed a new ___ restricting water usage.", a: "Ordinance" },
-            { q: "Citizens argued that the new ___ was too strict.", a: "Ordinance" },
-            { q: "If you violate a local ___, you may have to pay a fine.", a: "Ordinance" },
-            { q: "An ___ is legally binding only within the city limits.", a: "Ordinance" },
-            { q: "The Mayor vetoed the new zoning ___.", a: "Ordinance" },
-            // Civic Duty
-            { q: "Responsibilities of a citizen, like voting, are considered a ___.", a: "Civic Duty" },
-            { q: "Serving on a jury when called is your ___.", a: "Civic Duty" },
-            { q: "Paying taxes to fund public services is a ___.", a: "Civic Duty" },
-            { q: "Participating in local elections is an important ___.", a: "Civic Duty" },
-            { q: "Good citizens take their ___ seriously.", a: "Civic Duty" },
-            { q: "Attending community meetings is a voluntary ___.", a: "Civic Duty" },
-            { q: "Fulfilling your ___ helps the municipality function properly.", a: "Civic Duty" },
-            { q: "Every resident shares a ___ to keep the neighborhood safe.", a: "Civic Duty" },
-            // Infrastructure
-            { q: "The basic physical systems of a city (roads, bridges) are its ___.", a: "Infrastructure" },
-            { q: "Power grids and water supply networks are part of the ___.", a: "Infrastructure" },
-            { q: "The Public Works department builds and maintains city ___.", a: "Infrastructure" },
-            { q: "Our city's ___ is failing; the roads are full of potholes.", a: "Infrastructure" },
-            { q: "Economic growth requires a strong physical ___.", a: "Infrastructure" },
-            { q: "Replacing old pipes improves the underground ___.", a: "Infrastructure" },
-            { q: "Taxation funds the maintenance of local ___.", a: "Infrastructure" },
-            { q: "The new budget includes a massive ___ project for highways.", a: "Infrastructure" },
-            // Taxation
-            { q: "Money collected by local government to fund services is ___.", a: "Taxation" },
-            { q: "Property taxes are a common form of local ___.", a: "Taxation" },
-            { q: "The finance team checked the money collected from local ___.", a: "Taxation" },
-            { q: "The new library project was funded by ___.", a: "Taxation" },
-            { q: "Without ___, the city could not afford to pay the civil servants.", a: "Taxation" },
-            { q: "___ is the process of collecting revenue for public use.", a: "Taxation" },
-            { q: "The citizens voted against an increase in ___.", a: "Taxation" },
-            { q: "Funding for Public Safety comes directly from ___.", a: "Taxation" },
-            // Budget
-            { q: "The city's financial plan for spending is the ___.", a: "Budget" },
-            { q: "The city council met at Town Hall to discuss the new ___.", a: "Budget" },
-            { q: "Maria sat down with the finance team to review the city's ___.", a: "Budget" },
-            { q: "Without an approved ___, the municipality cannot spend money.", a: "Budget" },
-            { q: "The ___ details how much money goes to each department.", a: "Budget" },
-            { q: "Funding for Public Works was cut from this year's ___.", a: "Budget" },
-            { q: "The Mayor proposed a balanced ___ for the upcoming year.", a: "Budget" },
-            { q: "Allocating funds accurately is the main purpose of a ___.", a: "Budget" },
-            // Bylaw
-            { q: "A rule established by a community to regulate itself is a ___.", a: "Bylaw" },
-            { q: "A local regulation similar to an ordinance is a ___.", a: "Bylaw" },
-            { q: "The homeowners' association created a new ___.", a: "Bylaw" },
-            { q: "A municipal ___ prohibits parking on this street overnight.", a: "Bylaw" },
-            { q: "If you break a ___, you might receive a citation.", a: "Bylaw" },
-            { q: "The city council amended the ___ regarding pet ownership.", a: "Bylaw" },
-            { q: "A ___ is designed to maintain order within an organization or town.", a: "Bylaw" },
-            { q: "Enforcing every local ___ is part of Public Safety.", a: "Bylaw" }
-        ];
+        // ENCRYPTED QUESTION BANK MINIFIED
+        const QUESTION_BANK=[{q:"The elected head of a city, town, or other municipality is the ___.",a:_d("TWF5b3I=")},{q:"Who is the top elected executive in local government?",a:_d("TWF5b3I=")},{q:"The ___'s office is usually located inside the Town Hall.",a:_d("TWF5b3I=")},{q:"If you run for the highest elected office in a town, you want to be the ___.",a:_d("TWF5b3I=")},{q:"Who represents the city and leads the local government?",a:_d("TWF5b3I=")},{q:"The ___ gave a speech at the opening of the new community center.",a:_d("TWF5b3I=")},{q:"Which official is ELECTED by the public to lead the city's administration?",a:_d("TWF5b3I=")},{q:"The voters chose a new ___ to run their municipality.",a:_d("TWF5b3I=")},{q:"A legally recognized subject with rights and responsibilities is a ___.",a:_d("Q2l0aXplbg==")},{q:"Voting and paying taxes are responsibilities of a good ___.",a:_d("Q2l0aXplbg==")},{q:"A native or naturalized national of a state is called a ___.",a:_d("Q2l0aXplbg==")},{q:"A ___ has the civic duty to serve on a jury if called upon.",a:_d("Q2l0aXplbg==")},{q:"The new noise ordinance was debated by a group of concerned ___s.",a:_d("Q2l0aXplbg==")},{q:"Who is a legally recognized member of a state or commonwealth?",a:_d("Q2l0aXplbg==")},{q:"As a ___, you have the right to vote in local elections.",a:_d("Q2l0aXplbg==")},{q:"The safety of every ___ is the priority of the Public Safety department.",a:_d("Q2l0aXplbg==")},{q:"A person who lives somewhere permanently is a ___.",a:_d("UmVzaWRlbnQ=")},{q:"If you live in an apartment in the city, you are a ___ of that city.",a:_d("UmVzaWRlbnQ=")},{q:"The City Manager handles many questions from local ___s.",a:_d("UmVzaWRlbnQ=")},{q:"A ___ is someone who occupies a home on a long-term basis.",a:_d("UmVzaWRlbnQ=")},{q:"Parking permits are only given to a ___ of that specific street.",a:_d("UmVzaWRlbnQ=")},{q:"You don't have to be a citizen to be a ___, you just have to live there.",a:_d("UmVzaWRlbnQ=")},{q:"The new park is open to any ___ of the neighborhood.",a:_d("UmVzaWRlbnQ=")},{q:"Long-term occupants of a town are its ___s.",a:_d("UmVzaWRlbnQ=")},{q:"An elected member who helps make local laws is a ___.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"Also known as an Alderman, this person votes on city decisions.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"A ___ represents a specific district within the municipality.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"Who drafts and passes the local ordinances?",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"The ___ debated the new city budget at the Town Hall.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"An elected official who serves on the city's legislative body is a ___.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"If you want to change a bylaw, you should talk to your local ___.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"The Mayor and the ___s voted to approve the new infrastructure project.",a:_d("Q2l0eSBDb3VuY2lsb3I=")},{q:"A person employed in the public sector by a government department is a ___.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"Maria works at the Town Hall as a dedicated ___.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"A public employee who is not elected but hired is typically a ___.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"Which term describes workers like postal workers and public administrators?",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"A ___ serves the public through government agencies.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"Working for the municipality as a permanent employee makes you a ___.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"An appointed government worker is also known as a ___.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"The ___ processed the paperwork at the Registry Office.",a:_d("Q2l2aWwgU2VydmFudA==")},{q:"A voting member of a community represented by an elected official is a ___.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"Politicians often hold town meetings to listen to their ___s.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"If you live in the Mayor's district, you are their ___.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"Elected officials must answer to their ___s.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"A ___ is any person living in an area represented by a specific politician.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"The City Councilor sent a newsletter to every ___ in her district.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"Representing the needs of every ___ is a politician's main job.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"When a citizen votes for a representative, they act as a ___.",a:_d("Q29uc3RpdHVlbnQ=")},{q:"An appointed official who directs the daily administration of a city is the ___.",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"Unlike the Mayor, the ___ is usually hired, not elected.",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"Who handles the day-to-day operations of the municipality?",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"The ___ oversees all city departments and their budgets.",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"Maria works as an assistant to the ___, handling citizen complaints.",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"The city council appointed a new ___ to improve public services.",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"Which official is essentially the CEO of the local government?",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"The ___ ensures that the Mayor's policies are executed properly.",a:_d("Q2l0eSBNYW5hZ2Vy")},{q:"The headquarters of city administration is the ___.",a:_d("VG93biBIYWxs")},{q:"Where are the city council chambers usually located?",a:_d("VG93biBIYWxs")},{q:"The Mayor's office is typically found in the ___.",a:_d("VG93biBIYWxs")},{q:"Maria is a dedicated civil servant working at the local ___.",a:_d("VG93biBIYWxs")},{q:"The city council met at the ___ to discuss the new budget.",a:_d("VG93biBIYWxs")},{q:"Where do local government officials have their main administrative offices?",a:_d("VG93biBIYWxs")},{q:"Citizens gathered in front of the ___ to protest the new ordinance.",a:_d("VG93biBIYWxs")},{q:"The central administrative building of a municipal government is the ___.",a:_d("VG93biBIYWxs")},{q:"A building where you can borrow books and access computers is the ___.",a:_d("UHVibGljIExpYnJhcnk=")},{q:"Which facility is funded by local taxes to provide educational resources?",a:_d("UHVibGljIExpYnJhcnk=")},{q:"The Public Works department repaved the parking lot at the ___.",a:_d("UHVibGljIExpYnJhcnk=")},{q:"Where can a resident go to read or study for free?",a:_d("UHVibGljIExpYnJhcnk=")},{q:"The ___ offers free internet access and community classes.",a:_d("UHVibGljIExpYnJhcnk=")},{q:"If you need to check out a novel, you visit the ___.",a:_d("UHVibGljIExpYnJhcnk=")},{q:"A quiet public building dedicated to reading and learning is a ___.",a:_d("UHVibGljIExpYnJhcnk=")},{q:"The city's ___ is adding a new wing for children's books.",a:_d("UHVibGljIExpYnJhcnk=")},{q:"A building where legal disputes are resolved is a ___.",a:_d("Q291cnRob3VzZQ==")},{q:"Where are courts of law held?",a:_d("Q291cnRob3VzZQ==")},{q:"If you are called for jury duty, you must go to the ___.",a:_d("Q291cnRob3VzZQ==")},{q:"The judge and lawyers work at the local ___.",a:_d("Q291cnRob3VzZQ==")},{q:"Where are criminal and civil trials conducted?",a:_d("Q291cnRob3VzZQ==")},{q:"Legal disputes over local bylaws are often settled at the ___.",a:_d("Q291cnRob3VzZQ==")},{q:"The ___ is heavily guarded by the Public Safety department.",a:_d("Q291cnRob3VzZQ==")},{q:"Citizens serving their civic duty on a jury report to the ___.",a:_d("Q291cnRob3VzZQ==")},{q:"A public location where members gather for group activities is a ___.",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"Where can citizens find social support and public information locally?",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"The new ___ hosts after-school programs and senior citizen yoga.",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"A neighborhood hub for social and recreational activities is the ___.",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"The Mayor gave a speech at the opening of the new ___.",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"Where might a town hold an indoor neighborhood gathering?",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"The ___ offers free workshops and local events.",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"A local facility built to promote social cohesion is a ___.",a:_d("Q29tbXVuaXR5IENlbnRlcg==")},{q:"The department responsible for building and maintaining city infrastructure is ___.",a:_d("UHVibGljIFdvcmtz")},{q:"Who fixes potholes and maintains the main bridges?",a:_d("UHVibGljIFdvcmtz")},{q:"If a street needs to be repaved, you call the ___ department.",a:_d("UHVibGljIFdvcmtz")},{q:"The ___ department manages the city's water supply and roads.",a:_d("UHVibGljIFdvcmtz")},{q:"Which department repaved the parking lot at the Public Library?",a:_d("UHVibGljIFdvcmtz")},{q:"Repairing the city's power grids is coordinated by ___.",a:_d("UHVibGljIFdvcmtz")},{q:"The budget was increased to help ___ fix the old highways.",a:_d("UHVibGljIFdvcmtz")},{q:"Heavy machinery used to repair roads belongs to the ___ department.",a:_d("UHVibGljIFdvcmtz")},{q:"A government office where official records are kept is the ___.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"Where do you get copies of birth, marriage, and death certificates?",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"To legally record your new marriage, you visit the ___.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"The ___ maintains the vital statistics of the municipality's residents.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"If you lose your birth certificate, you apply for a new one at the ___.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"Official public records of the citizens are stored at the ___.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"The civil servant at the ___ processed my paperwork.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"You must go to the ___ to officially register a newborn baby.",a:_d("UmVnaXN0cnkgT2ZmaWNl")},{q:"The department responsible for garbage collection is ___.",a:_d("U2FuaXRhdGlvbg==")},{q:"Who handles recycling and street cleaning?",a:_d("U2FuaXRhdGlvbg==")},{q:"Every Tuesday, the trucks from the ___ department pick up our trash.",a:_d("U2FuaXRhdGlvbg==")},{q:"Waste Management is another term for the ___ department.",a:_d("U2FuaXRhdGlvbg==")},{q:"To report a missed trash pickup, you contact ___.",a:_d("U2FuaXRhdGlvbg==")},{q:"The ___ department ensures the city streets remain clean and hygienic.",a:_d("U2FuaXRhdGlvbg==")},{q:"Recycling programs are managed by the ___ division.",a:_d("U2FuaXRhdGlvbg==")},{q:"Proper ___ is essential to prevent disease in a dense municipality.",a:_d("U2FuaXRhdGlvbg==")},{q:"Government-funded transit systems like buses and subways are ___.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"Maria took ___ back home after work.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"Trains, trams, and city buses are part of ___.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"To reduce traffic, the city invests in better ___.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"A network of transit vehicles available for public use is ___.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"Commuters rely on ___ to get to work without a car.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"The city budget allocated funds for new subway trains for ___.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"Expanding the bus routes improves the city's ___.",a:_d("UHVibGljIFRyYW5zcG9ydGF0aW9u")},{q:"Essential services like water, electricity, and gas are ___.",a:_d("VXRpbGl0aWVz")},{q:"Sewage treatment is considered one of the public ___.",a:_d("VXRpbGl0aWVz")},{q:"The ___ we use daily in our homes are often regulated by the city.",a:_d("VXRpbGl0aWVz")},{q:"If your water is shut off, you must call the ___ department.",a:_d("VXRpbGl0aWVz")},{q:"Power grids and water supply networks provide ___.",a:_d("VXRpbGl0aWVz")},{q:"Residents pay monthly bills for their ___.",a:_d("VXRpbGl0aWVz")},{q:"Essential public provisions for a home are called ___.",a:_d("VXRpbGl0aWVz")},{q:"The storm damaged the power lines, cutting off ___ to the neighborhood.",a:_d("VXRpbGl0aWVz")},{q:"The Police and Fire Departments are part of ___.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"Departments dedicated to the safety of citizens make up ___.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"Emergency Medical Services (EMS) belongs to the ___ sector.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"Which department protects the community from crime and fires?",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"A large portion of the budget goes to ___ to hire more officers.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"The ___ department responds to 911 emergency calls.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"Ensuring the physical security of residents is the goal of ___.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"The ___ chief gave a report on the declining crime rate.",a:_d("UHVibGljIFNhZmV0eQ==")},{q:"The department that decides how land is used is ___.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"Who handles zoning for residential, commercial, or industrial areas?",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"The ___ department ensures organized growth of the city.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"Before building a new factory, you need approval from ___.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"To change a residential area into a commercial one, you go through ___.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"The layout of new neighborhoods is designed by ___.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"Zoning laws are enforced by the ___ division.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"To prevent factories near schools, the city uses ___.",a:_d("VXJiYW4gUGxhbm5pbmc=")},{q:"The department that maintains public playgrounds is ___.",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"Who organizes recreational programs and summer camps?",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"Maintaining the city's green spaces is the job of ___.",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"If a tree falls in a public park, ___ clears it.",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"The ___ department built a new swimming pool for the residents.",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"City sports leagues are organized by ___.",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"The ___ budget covers the upkeep of all hiking trails.",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"Which department focuses on the leisure activities of citizens?",a:_d("UGFya3MgYW5kIFJlY3JlYXRpb24=")},{q:"A city or town that has corporate status and local government is a ___.",a:_d("TXVuaWNpcGFsaXR5")},{q:"The Mayor is the elected head of a ___.",a:_d("TXVuaWNpcGFsaXR5")},{q:"Maria was proud of the work she did for her ___.",a:_d("TXVuaWNpcGFsaXR5")},{q:"An incorporated local area with self-government is a ___.",a:_d("TXVuaWNpcGFsaXR5")},{q:"The ___ is responsible for providing local services.",a:_d("TXVuaWNpcGFsaXR5")},{q:"Every citizen within the ___ must follow its bylaws.",a:_d("TXVuaWNpcGFsaXR5")},{q:"The boundaries of the ___ determine who pays local taxes.",a:_d("TXVuaWNpcGFsaXR5")},{q:"Another word for an incorporated town or city is ___.",a:_d("TXVuaWNpcGFsaXR5")},{q:"A local law enacted by a city council is an ___.",a:_d("T3JkaW5hbmNl")},{q:"The new noise ___ bans loud music after 9:00 PM.",a:_d("T3JkaW5hbmNl")},{q:"A municipal regulation, such as a parking rule, is an ___.",a:_d("T3JkaW5hbmNl")},{q:"The city council passed a new ___ restricting water usage.",a:_d("T3JkaW5hbmNl")},{q:"Citizens argued that the new ___ was too strict.",a:_d("T3JkaW5hbmNl")},{q:"If you violate a local ___, you may have to pay a fine.",a:_d("T3JkaW5hbmNl")},{q:"An ___ is legally binding only within the city limits.",a:_d("T3JkaW5hbmNl")},{q:"The Mayor vetoed the new zoning ___.",a:_d("T3JkaW5hbmNl")},{q:"Responsibilities of a citizen, like voting, are considered a ___.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Serving on a jury when called is your ___.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Paying taxes to fund public services is a ___.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Participating in local elections is an important ___.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Good citizens take their ___ seriously.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Attending community meetings is a voluntary ___.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Fulfilling your ___ helps the municipality function properly.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"Every resident shares a ___ to keep the neighborhood safe.",a:_d("Q2l2aWMgRHV0eQ==")},{q:"The basic physical systems of a city (roads, bridges) are its ___.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"Power grids and water supply networks are part of the ___.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"The Public Works department builds and maintains city ___.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"Our city's ___ is failing; the roads are full of potholes.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"Economic growth requires a strong physical ___.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"Replacing old pipes improves the underground ___.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"Taxation funds the maintenance of local ___.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"The new budget includes a massive ___ project for highways.",a:_d("SW5mcmFzdHJ1Y3R1cmU=")},{q:"Money collected by local government to fund services is ___.",a:_d("VGF4YXRpb24=")},{q:"Property taxes are a common form of local ___.",a:_d("VGF4YXRpb24=")},{q:"The finance team checked the money collected from local ___.",a:_d("VGF4YXRpb24=")},{q:"The new library project was funded by ___.",a:_d("VGF4YXRpb24=")},{q:"Without ___, the city could not afford to pay the civil servants.",a:_d("VGF4YXRpb24=")},{q:"___ is the process of collecting revenue for public use.",a:_d("VGF4YXRpb24=")},{q:"The citizens voted against an increase in ___.",a:_d("VGF4YXRpb24=")},{q:"Funding for Public Safety comes directly from ___.",a:_d("VGF4YXRpb24=")},{q:"The city's financial plan for spending is the ___.",a:_d("QnVkZ2V0")},{q:"The city council met at Town Hall to discuss the new ___.",a:_d("QnVkZ2V0")},{q:"Maria sat down with the finance team to review the city's ___.",a:_d("QnVkZ2V0")},{q:"Without an approved ___, the municipality cannot spend money.",a:_d("QnVkZ2V0")},{q:"The ___ details how much money goes to each department.",a:_d("QnVkZ2V0")},{q:"Funding for Public Works was cut from this year's ___.",a:_d("QnVkZ2V0")},{q:"The Mayor proposed a balanced ___ for the upcoming year.",a:_d("QnVkZ2V0")},{q:"Allocating funds accurately is the main purpose of a ___.",a:_d("QnVkZ2V0")},{q:"A rule established by a community to regulate itself is a ___.",a:_d("QnlsYXc=")},{q:"A local regulation similar to an ordinance is a ___.",a:_d("QnlsYXc=")},{q:"The homeowners' association created a new ___.",a:_d("QnlsYXc=")},{q:"A municipal ___ prohibits parking on this street overnight.",a:_d("QnlsYXc=")},{q:"If you break a ___, you might receive a citation.",a:_d("QnlsYXc=")},{q:"The city council amended the ___ regarding pet ownership.",a:_d("QnlsYXc=")},{q:"A ___ is designed to maintain order within an organization or town.",a:_d("QnlsYXc=")},{q:"Enforcing every local ___ is part of Public Safety.",a:_d("QnlsYXc=")}];
 
         const feedbackSuccess = ["Wow!", "Excellent!", "You are a genius!", "Good job!", "Wonderful!", "Amazing!", "Spectacular!", "Outstanding!", "Brilliant!"];
         const feedbackFail = ["What a pity!", "Wrong!", "Try again!", "Oops!", "Not quite!", "Oh no!", "Keep trying!", "Time's up!"];
@@ -1056,8 +777,6 @@
             speak("Game Over. You did your best!");
 
             // Generar Firma de Seguridad (Anti-Trampas Básico)
-            // Esto convierte la cadena en Base64. Google Sheets rechazará el guardado
-            // si el hacker no incluye este token exacto.
             const validName = playerName || "Unknown";
             const secretSignature = btoa(score + "-" + validName + "-cityvocab2024");
 
@@ -1079,10 +798,10 @@
                         },
                         body: JSON.stringify(newRecord)
                     });
-                    console.log("Guardado en Google Sheets correctamente.");
+                    console.log("Saved.");
                     fetchLeaderboardData(); // Refrescar base de datos visual
                 } catch (e) {
-                    console.error("No se pudo guardar en Google Sheets.", e);
+                    console.error("Save error.", e);
                     fallbackLocalSave(newRecord);
                 }
             } else {
@@ -1113,10 +832,10 @@
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
             } catch (e) {
-                console.error("Error obteniendo datos de Google Sheets:", e);
+                console.error("Error obteniendo datos:", e);
                 document.getElementById('offline-badge').classList.remove('hidden');
-                document.getElementById('offline-text').innerText = "Sin conexión a Google Sheets.";
-                updateLeaderboardUI(); // Muestra caché local si falla
+                document.getElementById('offline-text').innerText = "Sin conexión.";
+                updateLeaderboardUI(); 
             }
         }
 
