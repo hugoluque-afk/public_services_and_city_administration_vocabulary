@@ -909,12 +909,12 @@
 
             const listEl = document.getElementById('leaderboard-list');
             if (listEl) {
-                const top50 = leaderboardData.slice(0, 50); 
+                const allRecords = leaderboardData; // <- AQUI SE QUITO EL LÍMITE
                 listEl.innerHTML = '';
-                if (top50.length === 0) {
+                if (allRecords.length === 0) {
                     listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">No records yet!</td></tr>';
                 } else {
-                    top50.forEach((row, index) => {
+                    allRecords.forEach((row, index) => {
                         const tr = document.createElement('tr');
                         tr.className = 'border-b border-white/5 hover:bg-white/5 transition-colors';
                         const isTop1 = index === 0 ? 'text-yellow-400 font-black text-2xl drop-shadow-md' : '';
