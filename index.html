@@ -416,6 +416,8 @@
         
         // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por IP para evitar suplantaciones.
         function getUniqueBestScores(dataArray) {
+            if (!Array.isArray(dataArray)) return [];
+            
             const best = {};
             dataArray.forEach(record => {
                 const name = (record.name || "").trim();
@@ -476,7 +478,7 @@
                 stopLeaderboardPolling();
             } else if (screenId === 'welcome-screen' || screenId === 'leaderboard-screen') {
                 document.getElementById('bg-decorations').classList.add('hidden');
-                // En lugar de iniciar aquí ciegamente, dejamos que el motor principal maneje el Leaderboard
+                // Dejamos que el polling siga de fondo o se reactive desde sus propios botones
             }
         }
 
@@ -855,6 +857,11 @@
                 
                 const data = await response.json();
                 
+                // Protección si Google Sheets devuelve un error o no es un arreglo
+                if (!Array.isArray(data)) {
+                    throw new Error("Formato de datos incorrecto");
+                }
+                
                 console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
                 leaderboardData = getUniqueBestScores(data);
                 console.log(`🥇 Alumnos únicos tras el filtro IP: ${leaderboardData.length}`);
@@ -863,8 +870,7 @@
                 updateLeaderboardUI();
             } catch (e) {
                 console.error("Error obteniendo datos del leaderboard:", e);
-                document.getElementById('offline-badge').classList.remove('hidden');
-                document.getElementById('offline-text').innerText = "Sin conexión.";
+                // Si falla por algún motivo, al menos quitamos el mensaje de "Connecting..."
                 updateLeaderboardUI(); 
             }
         }
@@ -938,21 +944,20 @@
             window.switchScreen('leaderboard-screen');
         }
 
-        // 🚀 INICIALIZACIÓN CONEXIÓN EN CADENA (SECUENCIAL)
-        // Esto evita que las dos peticiones choquen al mismo tiempo y generen el error "Sin conexión"
-        async function initializeApp() {
+        // 🚀 INICIALIZACIÓN PARALELA MEJORADA
+        // Llama a las funciones sin chocarse al mismo milisegundo en la red
+        function initializeApp() {
             renderHearts();
             fetchUserIP(); // Se obtiene en segundo plano
             
-            try {
-                // 1. Descargamos nombres PRIMERO y ESPERAMOS a que termine
-                await fetchAllowedNames();
-            } catch (e) {
-                console.warn("Fallo al cargar nombres iniciales");
-            }
+            // Inicia la descarga de Nombres inmediatamente
+            fetchAllowedNames();
             
-            // 2. LUEGO DE LOS NOMBRES, empezamos el Leaderboard
-            startLeaderboardPolling();
+            // Inicia la descarga de la Tabla 1.5 segundos después. 
+            // Así garantizamos que cargue siempre sin quedarse trabado por culpa del otro.
+            setTimeout(() => {
+                startLeaderboardPolling();
+            }, 1500);
         }
 
         initializeApp();
