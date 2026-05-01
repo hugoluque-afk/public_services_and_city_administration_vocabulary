@@ -136,11 +136,11 @@
                 
                 <h3 class="text-amber-400 font-black text-2xl mb-6 flex items-center justify-center space-x-2 border-b border-white/10 pb-4 relative z-10">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
-                    <span>Top 5 Citizens</span>
+                    <span>Top Citizens</span>
                 </h3>
                 
                 <div id="mini-leaderboard-list" class="space-y-3 text-sm flex-1 relative z-10">
-                    <p class="text-gray-400 text-center mt-8">Connecting to Sheets...</p>
+                    <p class="text-gray-400 text-center mt-8">Iniciando sistema...</p>
                 </div>
                 
                 <button onclick="showLeaderboard('welcome-screen')" class="mt-6 w-full py-4 bg-indigo-600/30 hover:bg-indigo-600/50 rounded-2xl text-indigo-200 hover:text-white text-sm md:text-base font-bold transition-all border border-indigo-400/30 relative z-10 shadow-lg">
@@ -322,6 +322,15 @@
         let userIP = "unknown"; 
         let allowedNames = [];
 
+        // Herramienta visual para imprimir mensajes precisos
+        function setLeaderboardStatus(msg, isError = false) {
+            const miniList = document.getElementById('mini-leaderboard-list');
+            if (miniList) {
+                const color = isError ? "text-red-400" : "text-amber-400";
+                miniList.innerHTML = `<p class="${color} text-center mt-4 font-bold text-sm animate-pulse px-2">${msg}</p>`;
+            }
+        }
+
         // Obtener IP
         async function fetchUserIP() {
             try {
@@ -380,7 +389,6 @@
         async function fetchAllowedNames() {
             if (GOOGLE_SHEETS_URL.trim() === "") return;
             try {
-                // Agregar un timestamp asegura que siempre traiga datos frescos sin interferir con caché
                 const timestamp = new Date().getTime();
                 const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames&t=" + timestamp);
                 const names = await res.json();
@@ -414,34 +422,37 @@
 
         // --- CORE FUNCTIONS ---
         
-        // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por IP (Ideal para alumnos desde casa)
+        // 🚀 FUNCIÓN ACTUALIZADA Y PROTEGIDA: Filtro estricto por Nombre de Alumno.
         function getUniqueBestScores(dataArray) {
             if (!Array.isArray(dataArray)) return [];
             
             const best = {};
             dataArray.forEach(record => {
-                const name = (record.name || "").trim().toUpperCase();
-                const ip = (record.ip || "unknown").trim();
+                // Forzamos conversión a String y quitamos espacios en blanco para evitar errores si la data viene mal
+                const name = String(record.name || "").trim().toUpperCase();
                 
-                // Ignorar filas vacías
-                if (!name) return; 
+                // Ignorar filas completamente vacías o "basura"
+                if (!name || name === "UNDEFINED") return; 
 
-                // AGRUPAR POR IP: Previene que un alumno use varios nombres desde su casa.
-                // Como cada alumno está en su casa, todos tienen IPs únicas y todos aparecerán, 
-                // incluyendo a los que tienen CERO.
-                const key = (ip === "unknown" || ip === "") ? "UNKNOWN_" + name : ip;
+                // Agrupamos únicamente por el NOMBRE del alumno
+                const key = name;
                 
+                // Forzamos que el score y tiempo sean números seguros
+                const currentScore = Number(record.score) || 0;
+                const currentTime = Number(record.timeAlive) || 0;
+
                 if (!best[key]) {
-                    best[key] = record;
+                    best[key] = { ...record, score: currentScore, timeAlive: currentTime };
                 } else {
                     const curr = best[key];
-                    // Guardar solo si es mayor puntaje O mismo puntaje en menos tiempo
-                    if (record.score > curr.score || (record.score === curr.score && record.timeAlive < curr.timeAlive)) {
-                        best[key] = record;
+                    // Se queda en la tabla si sacó más puntos o si empató pero lo hizo más rápido
+                    if (currentScore > curr.score || (currentScore === curr.score && currentTime < curr.timeAlive)) {
+                        best[key] = { ...record, score: currentScore, timeAlive: currentTime };
                     }
                 }
             });
 
+            // Devolvemos los datos convertidos a Array y ordenados de mayor a menor
             const result = Object.values(best);
             result.sort((a, b) => {
                 if (b.score !== a.score) return b.score - a.score;
@@ -479,7 +490,6 @@
                 stopLeaderboardPolling();
             } else if (screenId === 'welcome-screen' || screenId === 'leaderboard-screen') {
                 document.getElementById('bg-decorations').classList.add('hidden');
-                // Dejamos que el polling siga de fondo o se reactive desde sus propios botones
             }
         }
 
@@ -839,40 +849,52 @@
             updateLeaderboardUI();
         }
 
+        // 🚀 NUEVA DESCARGA A PRUEBA DE BALAS CON DIAGNÓSTICO EN PANTALLA
         async function fetchLeaderboardData() {
-            if (GOOGLE_SHEETS_URL.trim() === "") {
-                updateLeaderboardUI();
-                return;
-            }
+            if (GOOGLE_SHEETS_URL.trim() === "") return;
 
             try {
-                // Generamos un timestamp para obligar al navegador a no usar caché (traer datos reales)
+                setLeaderboardStatus("Conectando con Google Sheets...");
+                
                 const timestamp = new Date().getTime();
                 const fetchUrl = GOOGLE_SHEETS_URL + "?action=getLeaderboard&t=" + timestamp;
 
                 const response = await fetch(fetchUrl);
                 
                 if (!response.ok) {
-                    throw new Error("Network response was not ok");
+                    throw new Error("HTTP Status " + response.status);
+                }
+
+                setLeaderboardStatus("Descargando información...");
+                const textResponse = await response.text(); 
+                
+                if (!textResponse || textResponse.trim() === "") {
+                    throw new Error("El servidor no devolvió datos.");
+                }
+
+                let data;
+                try {
+                    data = JSON.parse(textResponse);
+                } catch (err) {
+                    throw new Error("Error de permisos: Google devolvió un HTML.");
                 }
                 
-                const data = await response.json();
-                
-                // Protección si Google Sheets devuelve un error o no es un arreglo
                 if (!Array.isArray(data)) {
-                    throw new Error("Formato de datos incorrecto");
+                    throw new Error("El formato devuelto no es una lista válida.");
                 }
                 
-                console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
+                setLeaderboardStatus("Procesando mejores puntajes...");
                 leaderboardData = getUniqueBestScores(data);
-                console.log(`🥇 Alumnos únicos tras el filtro: ${leaderboardData.length}`);
 
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
+                
             } catch (e) {
                 console.error("Error obteniendo datos del leaderboard:", e);
-                // Si falla por algún motivo, al menos quitamos el mensaje de "Connecting..."
-                updateLeaderboardUI(); 
+                // ESTO MOSTRARÁ EL ERROR EXACTO EN TU PANTALLA
+                setLeaderboardStatus(`Error: ${e.message} (Presiona Ctrl+F5)`);
+                document.getElementById('offline-badge').classList.remove('hidden');
+                document.getElementById('offline-text').innerText = "Error de red";
             }
         }
 
@@ -891,8 +913,10 @@
             if (miniList) {
                 const top5 = leaderboardData.slice(0, 5);
                 miniList.innerHTML = '';
+                
+                // Si la base de datos está vacía, mostramos que no hay récords
                 if (top5.length === 0) {
-                    miniList.innerHTML = '<p class="text-gray-400 text-center mt-4">No records yet! Be the first!</p>';
+                    miniList.innerHTML = '<p class="text-gray-400 text-center mt-4">Nadie ha jugado aún. ¡Sé el primero!</p>';
                 } else {
                     top5.forEach((row, index) => {
                         const div = document.createElement('div');
@@ -919,7 +943,7 @@
                 const allRecords = leaderboardData; 
                 listEl.innerHTML = '';
                 if (allRecords.length === 0) {
-                    listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">No records yet! Be the first!</td></tr>';
+                    listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">La tabla está vacía. ¡Juega para aparecer aquí!</td></tr>';
                 } else {
                     allRecords.forEach((row, index) => {
                         const tr = document.createElement('tr');
@@ -945,20 +969,16 @@
             window.switchScreen('leaderboard-screen');
         }
 
-        // 🚀 INICIALIZACIÓN PARALELA MEJORADA
-        // Llama a las funciones sin chocarse al mismo milisegundo en la red
+        // 🚀 INICIO AISLADO PARA EVITAR CONGELAMIENTOS
         function initializeApp() {
             renderHearts();
-            fetchUserIP(); // Se obtiene en segundo plano
+            fetchUserIP(); // IP en segundo plano
             
-            // Inicia la descarga de Nombres inmediatamente
-            fetchAllowedNames();
-            
-            // Inicia la descarga de la Tabla 1.5 segundos después. 
-            // Así garantizamos que cargue siempre sin quedarse trabado por culpa del otro.
-            setTimeout(() => {
+            // Traemos los nombres
+            fetchAllowedNames().then(() => {
+                // Solo DESPUÉS de intentar traer los nombres, empezamos el Leaderboard
                 startLeaderboardPolling();
-            }, 1500);
+            });
         }
 
         initializeApp();
