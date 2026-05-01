@@ -414,21 +414,22 @@
 
         // --- CORE FUNCTIONS ---
         
-        // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por IP para evitar suplantaciones.
+        // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por IP (Ideal para alumnos desde casa)
         function getUniqueBestScores(dataArray) {
             if (!Array.isArray(dataArray)) return [];
             
             const best = {};
             dataArray.forEach(record => {
-                const name = (record.name || "").trim();
+                const name = (record.name || "").trim().toUpperCase();
                 const ip = (record.ip || "unknown").trim();
                 
                 // Ignorar filas vacías
                 if (!name) return; 
 
-                // AGRUPAR SOLO POR IP. Así si un alumno usa 5 nombres distintos desde su misma computadora,
-                // solo saldrá 1 vez con su mejor puntaje. (Si la IP es unknown, usamos el nombre para no borrarlos).
-                const key = ip === "unknown" ? "UNKNOWN_" + name.toUpperCase() : ip;
+                // AGRUPAR POR IP: Previene que un alumno use varios nombres desde su casa.
+                // Como cada alumno está en su casa, todos tienen IPs únicas y todos aparecerán, 
+                // incluyendo a los que tienen CERO.
+                const key = (ip === "unknown" || ip === "") ? "UNKNOWN_" + name : ip;
                 
                 if (!best[key]) {
                     best[key] = record;
@@ -864,7 +865,7 @@
                 
                 console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
                 leaderboardData = getUniqueBestScores(data);
-                console.log(`🥇 Alumnos únicos tras el filtro IP: ${leaderboardData.length}`);
+                console.log(`🥇 Alumnos únicos tras el filtro: ${leaderboardData.length}`);
 
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
@@ -918,7 +919,7 @@
                 const allRecords = leaderboardData; 
                 listEl.innerHTML = '';
                 if (allRecords.length === 0) {
-                    listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">No records yet!</td></tr>';
+                    listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">No records yet! Be the first!</td></tr>';
                 } else {
                     allRecords.forEach((row, index) => {
                         const tr = document.createElement('tr');
