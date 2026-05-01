@@ -380,11 +380,13 @@
         async function fetchAllowedNames() {
             if (GOOGLE_SHEETS_URL.trim() === "") return;
             try {
-                const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames");
+                // Agregar un timestamp asegura que siempre traiga datos frescos sin interferir con caché
+                const timestamp = new Date().getTime();
+                const res = await fetch(GOOGLE_SHEETS_URL + "?action=getNames&t=" + timestamp);
                 const names = await res.json();
                 if (Array.isArray(names)) { allowedNames = names; }
             } catch (e) {
-                console.error("Error obtaining allowed names");
+                console.error("Error obteniendo nombres permitidos", e);
             }
         }
 
@@ -474,7 +476,7 @@
                 stopLeaderboardPolling();
             } else if (screenId === 'welcome-screen' || screenId === 'leaderboard-screen') {
                 document.getElementById('bg-decorations').classList.add('hidden');
-                startLeaderboardPolling();
+                // En lugar de iniciar aquí ciegamente, dejamos que el motor principal maneje el Leaderboard
             }
         }
 
@@ -574,6 +576,7 @@
             exitFullScreen();
             window.switchScreen('welcome-screen');
             window.speechSynthesis.cancel();
+            startLeaderboardPolling();
         }
 
         function renderHearts() {
@@ -840,18 +843,26 @@
             }
 
             try {
+                // Generamos un timestamp para obligar al navegador a no usar caché (traer datos reales)
                 const timestamp = new Date().getTime();
-                const fetchUrl = GOOGLE_SHEETS_URL + "?t=" + timestamp;
+                const fetchUrl = GOOGLE_SHEETS_URL + "?action=getLeaderboard&t=" + timestamp;
 
                 const response = await fetch(fetchUrl);
+                
+                if (!response.ok) {
+                    throw new Error("Network response was not ok");
+                }
+                
                 const data = await response.json();
                 
+                console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
                 leaderboardData = getUniqueBestScores(data);
-                
+                console.log(`🥇 Alumnos únicos tras el filtro IP: ${leaderboardData.length}`);
+
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
             } catch (e) {
-                console.error("Error obteniendo datos:", e);
+                console.error("Error obteniendo datos del leaderboard:", e);
                 document.getElementById('offline-badge').classList.remove('hidden');
                 document.getElementById('offline-text').innerText = "Sin conexión.";
                 updateLeaderboardUI(); 
@@ -927,12 +938,21 @@
             window.switchScreen('leaderboard-screen');
         }
 
-        // 🚀 INICIALIZACIÓN PARALELA PARA QUE NO SE CUELGUE
-        function initializeApp() {
+        // 🚀 INICIALIZACIÓN CONEXIÓN EN CADENA (SECUENCIAL)
+        // Esto evita que las dos peticiones choquen al mismo tiempo y generen el error "Sin conexión"
+        async function initializeApp() {
             renderHearts();
-            fetchUserIP(); // Sin await: se ejecuta en el fondo
-            fetchAllowedNames(); // Sin await: se ejecuta en el fondo
-            startLeaderboardPolling(); // Arranca inmediatamente
+            fetchUserIP(); // Se obtiene en segundo plano
+            
+            try {
+                // 1. Descargamos nombres PRIMERO y ESPERAMOS a que termine
+                await fetchAllowedNames();
+            } catch (e) {
+                console.warn("Fallo al cargar nombres iniciales");
+            }
+            
+            // 2. LUEGO DE LOS NOMBRES, empezamos el Leaderboard
+            startLeaderboardPolling();
         }
 
         initializeApp();
