@@ -62,7 +62,7 @@
         ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.2); border-radius: 8px; }
         ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.3); }
 
-        /* Autocomplete scrollbar styling (light background) */
+        /* Autocomplete scrollbar styling */
         #custom-autocomplete-list::-webkit-scrollbar-track {
             background: #f8fafc;
         }
@@ -301,7 +301,7 @@
         const _d = (s) => atob(s);
         
         // URL ENCRIPTADA NUEVA
-        const GOOGLE_SHEETS_URL = _d("aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6b0dpZnI2a25Fcm5fbV9GQ1ZmM1RrNExCRGswcm1ZeXZtR0VQZ2FWbXppMThqcFdicVRvdHZlNENqWTFiSHBNNzIvZXhlYw==");
+        const GOOGLE_SHEETS_URL = _d("aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J5N3RkZGlJZGVHUnhycnR6WnZ0Z3NCeGplcGdORjlwRFltZkhrVEc5N1Q5LXFuelgtdVRQRG5XSXpfZF9nYUx1d04vZXhlYw==");
 
         // --- GLOBAL VARIABLES ---
         let playerName = "";
@@ -415,35 +415,35 @@
 
         // --- CORE FUNCTIONS ---
         
-        // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por Alumno e IP, asegurando mostrar los ceros
+        // 🚀 FUNCIÓN ACTUALIZADA: Filtrar mejor récord por IP para evitar suplantaciones.
         function getUniqueBestScores(dataArray) {
             const best = {};
             dataArray.forEach(record => {
                 const name = (record.name || "").trim();
-                // Ignorar filas en blanco que Google Sheets a veces envía por error
+                const ip = (record.ip || "unknown").trim();
+                
+                // Ignorar filas vacías
                 if (!name) return; 
 
-                // Agrupamos por Nombre E IP. Así, si 2 alumnos se llaman "Juan" 
-                // pero tienen IP diferente, ambos saldrán. Si es el mismo IP y Nombre, 
-                // solo se queda el puntaje más alto.
-                const key = name.toUpperCase() + "_" + (record.ip || "unknown");
+                // AGRUPAR SOLO POR IP. Así si un alumno usa 5 nombres distintos desde su misma computadora,
+                // solo saldrá 1 vez con su mejor puntaje. (Si la IP es unknown, usamos el nombre para no borrarlos).
+                const key = ip === "unknown" ? "UNKNOWN_" + name.toUpperCase() : ip;
                 
                 if (!best[key]) {
                     best[key] = record;
                 } else {
                     const curr = best[key];
-                    // Si el nuevo registro tiene un puntaje mayor, O si tiene el mismo puntaje pero se hizo en menos tiempo, lo reemplazamos
+                    // Guardar solo si es mayor puntaje O mismo puntaje en menos tiempo
                     if (record.score > curr.score || (record.score === curr.score && record.timeAlive < curr.timeAlive)) {
                         best[key] = record;
                     }
                 }
             });
 
-            // Convertimos el objeto filtrado de vuelta a un Array y lo ordenamos
             const result = Object.values(best);
             result.sort((a, b) => {
                 if (b.score !== a.score) return b.score - a.score;
-                return a.timeAlive - b.timeAlive; // A menor tiempo, mejor puesto
+                return a.timeAlive - b.timeAlive;
             });
             return result;
         }
@@ -702,21 +702,16 @@
 
             const isCorrect = selectedOption === currentQ.answer;
 
-            // Visual feedback on buttons
             const buttons = document.getElementById('options-container').querySelectorAll('button');
             buttons.forEach(b => {
-                // Remove interactive classes
                 b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer', 'hover:border-indigo-400', 'hover:text-indigo-600', 'bg-white', 'text-slate-700', 'border-slate-200');
                 b.classList.add('cursor-not-allowed');
 
                 if (b.innerText === currentQ.answer) {
-                    // Highlight correct answer in GREEN
                     b.classList.add('bg-green-500', 'text-white', 'border-green-600', 'shadow-xl', 'scale-[1.02]');
                 } else if (b.innerText === selectedOption && !isCorrect) {
-                    // Highlight wrong selected answer in RED
                     b.classList.add('bg-red-500', 'text-white', 'border-red-600');
                 } else {
-                    // Keep other unselected wrong answers readable but muted
                     b.classList.add('bg-slate-100', 'text-slate-400', 'border-slate-200', 'opacity-80');
                 }
             });
@@ -766,14 +761,12 @@
             isProcessing = true;
             stopAndRecordTime();
             
-            // Visual feedback on buttons for timeout
             const buttons = document.getElementById('options-container').querySelectorAll('button');
             buttons.forEach(b => {
                 b.classList.remove('hover:scale-[1.02]', 'active:scale-[0.98]', 'cursor-pointer', 'hover:border-indigo-400', 'hover:text-indigo-600', 'bg-white', 'text-slate-700', 'border-slate-200');
                 b.classList.add('cursor-not-allowed');
 
                 if (b.innerText === currentQ.answer) {
-                    // Reveal the correct answer in GREEN
                     b.classList.add('bg-green-500', 'text-white', 'border-green-600', 'shadow-xl', 'scale-[1.02]');
                 } else {
                     b.classList.add('bg-slate-100', 'text-slate-400', 'border-slate-200', 'opacity-80');
@@ -810,7 +803,6 @@
             window.switchScreen('gameover-screen');
             speak("Game Over. You did your best!");
 
-            // Generar Firma de Seguridad (Anti-Trampas Básico)
             const validName = playerName || "Unknown";
             const secretSignature = btoa(score + "-" + validName + "-cityvocab2024");
 
@@ -822,7 +814,6 @@
                 token: secretSignature 
             };
 
-            // GRABADO A GOOGLE SHEETS
             if (GOOGLE_SHEETS_URL.trim() !== "") {
                 try {
                     await fetch(GOOGLE_SHEETS_URL, {
@@ -833,7 +824,7 @@
                         body: JSON.stringify(newRecord)
                     });
                     console.log("Saved.");
-                    fetchLeaderboardData(); // Refrescar base de datos visual
+                    fetchLeaderboardData();
                 } catch (e) {
                     console.error("Save error.", e);
                     fallbackLocalSave(newRecord);
@@ -845,12 +836,10 @@
 
         function fallbackLocalSave(newRecord) {
             leaderboardData.push(newRecord);
-            // Usar nuestra función para filtrar el mejor puntaje en modo local también
             leaderboardData = getUniqueBestScores(leaderboardData);
             updateLeaderboardUI();
         }
 
-        // --- GOOGLE SHEETS FETCHING LOGIC ---
         async function fetchLeaderboardData() {
             if (GOOGLE_SHEETS_URL.trim() === "") {
                 updateLeaderboardUI();
@@ -861,12 +850,11 @@
                 const response = await fetch(GOOGLE_SHEETS_URL);
                 const data = await response.json();
                 
-                console.log(`📡 Recibidos de Sheets: ${data.length} intentos en total.`);
+                console.log(`📡 Registros recibidos desde Sheets: ${data.length}`);
                 
-                // Procesar los datos para dejar solo EL MEJOR INTENTO de cada alumno
                 leaderboardData = getUniqueBestScores(data);
                 
-                console.log(`🥇 Alumnos únicos tras filtrar repetidos: ${leaderboardData.length}`);
+                console.log(`🥇 Alumnos únicos tras el filtro: ${leaderboardData.length}`);
 
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
@@ -918,7 +906,7 @@
 
             const listEl = document.getElementById('leaderboard-list');
             if (listEl) {
-                const allRecords = leaderboardData; // <- AQUI SE QUITO EL LÍMITE
+                const allRecords = leaderboardData; 
                 listEl.innerHTML = '';
                 if (allRecords.length === 0) {
                     listEl.innerHTML = '<tr><td colspan="4" class="text-center p-4 text-gray-400">No records yet!</td></tr>';
