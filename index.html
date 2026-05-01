@@ -414,6 +414,35 @@
         const feedbackFail = ["What a pity!", "Wrong!", "Try again!", "Oops!", "Not quite!", "Oh no!", "Keep trying!", "Time's up!"];
 
         // --- CORE FUNCTIONS ---
+        
+        // 🚀 NUEVA FUNCIÓN: Filtrar solo el mejor récord por Alumno (Nombre) e IP
+        function getUniqueBestScores(dataArray) {
+            const best = {};
+            dataArray.forEach(record => {
+                // Generamos una clave única combinando el Nombre y la IP. 
+                // Usamos toUpperCase() para evitar que "Juan" y "JUAN" se cuenten como dos distintos.
+                const key = (record.name || "").trim().toUpperCase() + "_" + (record.ip || "unknown");
+                
+                if (!best[key]) {
+                    best[key] = record;
+                } else {
+                    const curr = best[key];
+                    // Si el nuevo registro tiene un puntaje mayor, O si tiene el mismo puntaje pero se hizo en menos tiempo, lo reemplazamos
+                    if (record.score > curr.score || (record.score === curr.score && record.timeAlive < curr.timeAlive)) {
+                        best[key] = record;
+                    }
+                }
+            });
+
+            // Convertimos el objeto filtrado de vuelta a un Array y lo ordenamos
+            const result = Object.values(best);
+            result.sort((a, b) => {
+                if (b.score !== a.score) return b.score - a.score;
+                return a.timeAlive - b.timeAlive; // A menor tiempo, mejor puesto
+            });
+            return result;
+        }
+
         function shuffleArray(array) { return array.sort(() => Math.random() - 0.5); }
 
         function speak(text) {
@@ -811,10 +840,8 @@
 
         function fallbackLocalSave(newRecord) {
             leaderboardData.push(newRecord);
-            leaderboardData.sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score;
-                return a.timeAlive - b.timeAlive; 
-            });
+            // Usar nuestra función para filtrar el mejor puntaje en modo local también
+            leaderboardData = getUniqueBestScores(leaderboardData);
             updateLeaderboardUI();
         }
 
@@ -828,7 +855,10 @@
             try {
                 const response = await fetch(GOOGLE_SHEETS_URL);
                 const data = await response.json();
-                leaderboardData = data;
+                
+                // Procesar los datos para dejar solo EL MEJOR INTENTO de cada alumno
+                leaderboardData = getUniqueBestScores(data);
+                
                 document.getElementById('offline-badge').classList.add('hidden');
                 updateLeaderboardUI();
             } catch (e) {
