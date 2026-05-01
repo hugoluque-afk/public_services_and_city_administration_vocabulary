@@ -849,12 +849,15 @@
             updateLeaderboardUI();
         }
 
-        // 🚀 NUEVA DESCARGA A PRUEBA DE BALAS CON DIAGNÓSTICO EN PANTALLA
+        // 🚀 DESCARGA EN SEGUNDO PLANO SIN INTERRUMPIR LA UI
         async function fetchLeaderboardData() {
             if (GOOGLE_SHEETS_URL.trim() === "") return;
 
             try {
-                setLeaderboardStatus("Conectando con Google Sheets...");
+                // Solo muestra el mensaje de "Conectando..." si es la primera vez que se carga.
+                if (leaderboardData.length === 0) {
+                    setLeaderboardStatus("Conectando con Google Sheets...");
+                }
                 
                 const timestamp = new Date().getTime();
                 const fetchUrl = GOOGLE_SHEETS_URL + "?action=getLeaderboard&t=" + timestamp;
@@ -865,7 +868,10 @@
                     throw new Error("HTTP Status " + response.status);
                 }
 
-                setLeaderboardStatus("Descargando información...");
+                if (leaderboardData.length === 0) {
+                    setLeaderboardStatus("Descargando información...");
+                }
+                
                 const textResponse = await response.text(); 
                 
                 if (!textResponse || textResponse.trim() === "") {
@@ -883,16 +889,22 @@
                     throw new Error("El formato devuelto no es una lista válida.");
                 }
                 
-                setLeaderboardStatus("Procesando mejores puntajes...");
+                if (leaderboardData.length === 0) {
+                    setLeaderboardStatus("Procesando mejores puntajes...");
+                }
+                
                 leaderboardData = getUniqueBestScores(data);
 
                 document.getElementById('offline-badge').classList.add('hidden');
+                
+                // Actualiza visualmente la tabla sin borrarla bruscamente
                 updateLeaderboardUI();
                 
             } catch (e) {
                 console.error("Error obteniendo datos del leaderboard:", e);
-                // ESTO MOSTRARÁ EL ERROR EXACTO EN TU PANTALLA
-                setLeaderboardStatus(`Error: ${e.message} (Presiona Ctrl+F5)`);
+                if (leaderboardData.length === 0) {
+                    setLeaderboardStatus(`Error: ${e.message} (Presiona Ctrl+F5)`, true);
+                }
                 document.getElementById('offline-badge').classList.remove('hidden');
                 document.getElementById('offline-text').innerText = "Error de red";
             }
